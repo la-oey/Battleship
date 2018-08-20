@@ -156,10 +156,11 @@ display:none;
 
 table {
   border-collapse: collapse;
+  margin-right: 30px;
+  margin-left: auto;
 }
 
 th, td {
-    /*border-collapse: collapse;*/
     border: 3px solid black;
     width: 55px;
     height: 55px;
@@ -167,14 +168,83 @@ th, td {
     text-align: center;
 }
 
+img {
+  display: block;
+  width: 100%;
+  height: auto;
+  position: relative;
+}
+
 #feedback {
   position: relative;
-  left: 300px;
+  left: 350px;
   float: left;
 }
 
-h2 {
-  position: relative;
-  left: 400px;
+.column {
   float: left;
 }
+
+#trialDiv {
+  width: 55%;
+  margin-right:0;
+}
+
+#feedbackTurn {
+  width: 15%;
+  text-align: left;
+  font-size: 20px;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+#completeDiv {
+  width: 30%;
+}
+
+#completeBoard {
+  float: left;
+  bottom: 500px;
+  transform: scale(0.4);
+  border-spacing: 0px;
+  margin-left: -140px;
+  margin-right: auto;
+}
+
+
+#finalBoardCol {
+  width: 50%;
+  text-align: center;
+}
+
+#keyCol {
+  width: 50%;
+  text-align: center;
+}
+
+.finalCol {
+  position: relative;
+  top: -20px;
+}
+
+#thankyou {
+  margin: 0 auto;
+  font-size: 28px;
+  font-style: bold;
+}
+
+#key {
+  margin: 0 auto;
+}
+
+#finalBoard {
+  margin: 0 auto;
+}
+
+.finalLabel {
+  font-size: 30px;
+  font-family: "Arial Black";
+}
+
+
+
+
