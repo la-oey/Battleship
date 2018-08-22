@@ -154,6 +154,11 @@ display:none;
   color: white;
 }
 
+#assignedRole {
+  font-size: 36px;
+  font-style: bold;
+}
+
 table {
   border-collapse: collapse;
   margin-right: 30px;
@@ -164,15 +169,14 @@ th, td {
     border: 3px solid black;
     width: 55px;
     height: 55px;
-    font-size: 40px;
-    text-align: center;
 }
 
 img {
   display: block;
-  width: 100%;
+  width: 95%;
   height: auto;
   position: relative;
+  margin: 0 auto;
 }
 
 #feedback {
@@ -208,6 +212,11 @@ img {
   border-spacing: 0px;
   margin-left: -140px;
   margin-right: auto;
+}
+
+
+#practiceLearn {
+  margin: 0 auto;
 }
 
 

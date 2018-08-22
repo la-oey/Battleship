@@ -78,15 +78,39 @@ $(document).ready(function(){
  <p class="mtitle">
             Welcome to the study.
         <br><br>
-        You will be asked to respond by moving the slider for all of the questions. <br>
+        You and your friend are training for the Olympic Doubles Archery event. The event consists of two players. One player shoots the arrow...but doesn't know where the bullseye is located, though she knows some places where the bullseye is NOT located. The other player knows where the bullseye is...but does not know what his teammate knows. You will be asked to play either the role of the learner or the teacher. <br>
         <br>
-        <mark>Questions may vary throughout the whole trial. <br> Please pay attention for the entire time.</mark>
-                </p>
+        Next, you will see a practice trial in which you will take on the role of the learner, followed by the teacher.
+  </p>
 <button class="big-button" onclick="clickInstructions();">Click here to begin</button>
 </div>
 
+<div id="practice" class="screen">
+  <center><h1>Practice: Learner</h1>
+    <div id="practiceInstruct">Click where you think the target will be. You can only click on the white squares.</div><br>
+    <div id="trialDiv_learner"></div><br><br>
+  <div id="feedback_learner" style="clear:both;"></div></center>
+  <button class="big-button" id="nextPractice" type="button" onclick="trialStart();">Next!</button>
+</div>
+
+<div id="postpractice" class="screen">
+  <p class="mtitle">Nice job!
+    <br>
+    You will now be randomly assigned to the role of learner or teacher. If you are the learner, you will need to find out where the bullseye is with the help of hints from your partner. If you are the teacher, you will need to provide hints that will help your partner find where the bullseye is and then you will be asked to paint in the spaces that your partner sees.
+    <br>
+  </p>
+  <button class="big-button" onclick="clickPostpractice();">Click to continue</button>
+</div>
+
+<div id="assignment" class="screen">
+  <p class="mtitle">Your assigned role:<br><br>
+    <p2 id="assignedRole">Teacher</p3><br><br>
+  </p>
+  <button class="big-button" onclick="clickAssignment();">Click to continue</button>
+</div>
+
 <div id="trial" class="screen">
-	<center><h1 id="trialTxt">Trial 0</h1>
+	<center><h1 id="trialTxt">Practice: Teacher</h1>
     <div id="trialInstruct"></div><br>
     <div class="column" id="trialDiv"></div></center>
     <div class="column" id="feedbackTurn"></div>
@@ -94,15 +118,6 @@ $(document).ready(function(){
   <div id="feedback" style="clear:both;"></div>
 	<button class="big-button" id="next" type="button" onclick="trialPaint();"  >Next!</button>
 </div>
-
-<!-- <div id="trialAttention" class="screen">
-	<center><p class="questions"><i><u>Move the slider to the left end to show you are paying attention</i></u> <b  id="attentionText"></b>?</p><br></center>
- <center><img src="img/basketball.jpg" width="305" height="312" id="AttPicture" alt="some image" class="pic"></center>
-<div class="textleft">Not at all </div><div class="textright"> Very much </div>
-  <center><input type="range" min="1" max="1000"  id="AttSlider"><br></center>
-	<button class="big-button" id="done" type="button" onclick="Acheck_single();"  >Next!</button>
-</div> -->
-
 
 <div id="completed" class="screen">
     <center><h3>Final Percent Correct: <p2 id="finalCorr"></p2>%</h3></center>
