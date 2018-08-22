@@ -30,6 +30,13 @@ var cellsPainted = [];
 var practiceGuess = true;
 var guessCheck = false;
 var role = 'learner';
+var expt = {
+    sona: {
+            experiment_id: 1467,
+        credit_token: '0263273563ac435aaea995b95b9b8169'
+    }
+};
+
 
 function pageLoad(){
     document.getElementById('consent').style.display = 'block';
