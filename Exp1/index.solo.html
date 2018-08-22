@@ -58,7 +58,7 @@ $(document).ready(function(){
               </p>
 
 
-	<button class= "big-button" onclick="clickConsent();"  > Click here to consent and agree to participate</button>
+	<button class= "big-button" onclick="clickConsent();"> Click here to consent and agree to participate</button>
 </div>
 
 <!-- <div id="selectDiff" class="screen">
@@ -85,12 +85,19 @@ $(document).ready(function(){
 <button class="big-button" onclick="clickInstructions();">Click here to begin</button>
 </div>
 
+<div id="practiceInstruct" class="screen">
+  <center><p><br><br>
+    Practice as the <b id="practiceRole">learner</b>.
+  </p></center>
+  <button class="big-button" id="nextPracticeRole" type="button" onclick="clickPracticeRole();">Next!</button>
+</div>
+
 <div id="practice" class="screen">
   <center><h1>Practice: Learner</h1>
-    <div id="practiceInstruct">Click where you think the target will be. You can only click on the white squares.</div><br>
+    <div id="practiceInstruct">Click on the square where you think the target will be.<br>You can only click on the white squares.</div><br>
     <div id="trialDiv_learner"></div><br><br>
   <div id="feedback_learner" style="clear:both;"></div></center>
-  <button class="big-button" id="nextPractice" type="button" onclick="trialStart();">Next!</button>
+  <button class="big-button" id="nextPractice" type="button" onclick="practiceDone();">Next!</button>
 </div>
 
 <div id="postpractice" class="screen">

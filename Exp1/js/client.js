@@ -17,10 +17,10 @@ function parseClient(){
 	} else if(isSona()){
 		// is sona
 		client.type = 'sona';
-		client.experiment_id = settings.sona.experiment_id;
-		client.credit_token = settings.sona.credit_token;
+		client.experiment_id = expt.sona.experiment_id;
+		client.credit_token = expt.sona.credit_token;
 		client.survey_code = getParameterByName("survey_code");
-		client.sid = client.survey_code;
+		client.sid = 'sona-' + client.survey_code;
 	} else {
 		// just a random visitor?
 		client.type = 'visitor';
@@ -37,8 +37,7 @@ function parseClient(){
 function isSona(){
 	var code = getParameterByName("survey_code");
 	var sona = getParameterByName("sona");
-	if(! code == null && ! sona == null)
-	{
+	if(!(code == null) && !(sona == null)){
 		return true;
 	} else {
 		return false;
@@ -83,13 +82,13 @@ function postMturk(client){
 
 function postSona(client){
 	var form = document.createElement('form')
-	form.method = 'POST';
+	form.method = 'GET';
 	form.action = 'https://ucsd.sona-systems.com/webstudy_credit.aspx';
-
+	// systems.com/services/SonaAPI.svc/WebstudyCredit?experiment_id=123&credit_token=9185d436e5f94b1581b0918162f6d7e8&survey_code=XXXX
+ 
     form.appendChild(addHidden('experiment_id', client.experiment_id));  
-    form.appendChild(addHidden('credit_token', '805f6634de5a46b3aecffe2818d8d90c'));
-    //9185d436e5f94b1581b0918162f6d7e8
-    form.appendChild(addHidden('survey_code', client.subjectId));  
+    form.appendChild(addHidden('credit_token', client.credit_token));
+    form.appendChild(addHidden('survey_code', client.survey_code));  
 
     document.body.appendChild(form);
     form.submit();
