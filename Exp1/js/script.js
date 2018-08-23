@@ -1,3 +1,9 @@
+var expt = {
+    sona: {
+            experiment_id: 1467,
+        credit_token: '0263273563ac435aaea995b95b9b8169'
+    }
+};
 var client = parseClient();
 var exptPart = "practice";
 var trialNumber = 0;
@@ -30,12 +36,6 @@ var cellsPainted = [];
 var practiceGuess = true;
 var guessCheck = false;
 var role = 'learner';
-var expt = {
-    sona: {
-            experiment_id: 1467,
-        credit_token: '0263273563ac435aaea995b95b9b8169'
-    }
-};
 
 
 function pageLoad(){
@@ -484,6 +484,7 @@ function teacherHint(){
             }
         }
     }
+
     eliminatedByTurn.push(elimSpaces);
     numElimRounds.push(numElimRound)
 
@@ -555,7 +556,8 @@ function practiceDone(){
 }
 
 function experimentDone(){
-    window.location = 'http://www.evullab.org';
+    //window.location = "http://www.evullab.org/";
+    submitExternal(client);
 }
 
 function sample_without_replacement(sampleSize, sample){
