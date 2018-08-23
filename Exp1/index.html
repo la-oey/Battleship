@@ -75,37 +75,38 @@ $(document).ready(function(){
 </div> -->
 
 <div id="instructions" class="screen">
- <p class="mtitle">
-            Welcome to the study.
+ <p class="mtitle">Welcome to the study.</p>
         <br><br>
-        You and your friend are training for the Olympic Doubles Archery event. The event consists of two players. One player shoots the arrow...but doesn't know where the bullseye is located, though she knows some places where the bullseye is NOT located. The other player knows where the bullseye is...but does not know what his teammate knows. You will be asked to play either the role of the learner or the teacher. <br>
-        <br>
-        Next, you will see practice trials in which you will take on the role of the learner, followed by the teacher.
-  </p>
+        <p>You and your friend are training for the Olympic Doubles Archery event. The event consists of two players. One player, <b>the learner</b>, shoots the arrow...but doesn't know where the bullseye is located, though she knows some places where the bullseye is NOT located. She needs to learn the location from her partner. The other player, <b>the teacher</b>, knows where the bullseye is...but does not know what his teammate knows. He needs to guide his partner to shoot at the right location. You will be asked to play either the role of the learner or the teacher. 
+        <br><br>
+        Next, you will see practice trials in which you will take on the role of the learner, followed by the teacher.</p>
 <button class="big-button" onclick="clickInstructions();">Click here to begin</button>
 </div>
 
 <div id="practiceInstruct" class="screen">
-  <center><p><br><br>
-    Practice as the <b id="practiceRole">learner</b>.
-  </p></center>
+  <p><br><br>Practice as the <b id="practiceRole">learner</b>.
+      <br><br>
+      <p2 id="roleInstruct">Your partner will show you which half of the board does NOT contain the bullseye, indicated by the colored shading. You will then click on the space where you think the bullseye is located from the remaining available spaces. Use the mouse to click on the spaces. You can only click on the white spaces. You and your partner will keep on providing hints and shooting the arrow until you hit the bullseye, at which point you can move to the next section. Try to hit the bullseye in as few turns as possible.</p2>
+  </p>
   <button class="big-button" id="nextPracticeRole" type="button" onclick="clickPracticeRole();">Next!</button>
 </div>
 
 <div id="practice" class="screen">
   <center><h1>Practice: Learner</h1>
-    <div id="practiceInstruct">Click on the square where you think the target will be.<br>You can only click on the white squares.</div><br>
+    <div id="practiceInstruct">Click on the space where you think the bullseye will be.<br>You can only click on the white spaces.<br></div><br>
     <div id="trialDiv_learner"></div><br><br>
   <div id="feedback_learner" style="clear:both;"></div></center>
   <button class="big-button" id="nextPractice" type="button" onclick="practiceDone();">Next!</button>
 </div>
 
 <div id="postpractice" class="screen">
-  <p class="mtitle">Nice job!
+  <p class="mtitle">Nice job!</p>
     <br>
-    You will now be randomly assigned to the role of learner or teacher. If you are the learner, you will need to find out where the bullseye is with the help of hints from your partner. If you are the teacher, you will need to provide hints that will help your partner find where the bullseye is and then you will be asked to paint in the spaces that your partner sees.
+    <p>You will now be randomly assigned to the role of learner or teacher. If you are the learner, you will need to find out where the bullseye is with the help of hints from your partner. If you are the teacher, you will need to provide hints that will help your partner find where the bullseye is and then you will be asked to paint in the spaces that your partner sees.
+    <br><br>
+    <b>The spaces that your partner knows do not contain the bullseye stays constant across trials, but the bullseye location changes between trials.</b> There will be 8 trials. Good luck!
     <br>
-  </p>
+    </p>
   <button class="big-button" onclick="clickPostpractice();">Click to continue</button>
 </div>
 

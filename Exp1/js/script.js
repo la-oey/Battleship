@@ -1,10 +1,3 @@
-var expt = {
-    sona: {
-            experiment_id: 1467,
-        credit_token: '0263273563ac435aaea995b95b9b8169'
-    }
-};
-var client = parseClient();
 var exptPart = "practice";
 var trialNumber = 0;
 var trialData = [];
@@ -36,6 +29,14 @@ var cellsPainted = [];
 var practiceGuess = true;
 var guessCheck = false;
 var role = 'learner';
+var expt = {
+    saveURL: 'submit.simple.php',
+    sona: {
+            experiment_id: 1467,
+        credit_token: '0263273563ac435aaea995b95b9b8169'
+    }
+};
+var client = parseClient();
 
 
 function pageLoad(){
@@ -358,13 +359,17 @@ function trialFeedback(){
     document.getElementById('feedbackTurn').innerHTML = '';
     $('#completeBoard').hide();
     $('#gameboard').hide();
-    document.getElementById('feedback').innerHTML = "<br>Spaces Correct: <p2 id='spacesCorr'></p2> / " + learnOrigSpaces.length + "<br><br><br>";
+    
     for(var a=0; a<learnOrigSpaces.length; a++){
         index = learnOrigSpaces[a].r * cols + learnOrigSpaces[a].c;
         if($('#gameboardCell_'+index).attr('cellSelected')=='true'){
             ++cellsCorr;
         }
     }
+
+    $('#feedback').html("<div id='paintFeedback'><b>Feedback: </b><p2 id='spacesCorr'>" + cellsCorr + " / " + learnOrigSpaces.length + "</p2> Spaces Correct</div><br><br><br>");
+    $('#paintFeedback').css({'font-size':'36px'});
+    $('#spacesCorr').css({'padding-left':'20px', 'padding-right':'10px', 'font-size':'56px'})
 
     if(exptPart == 'practice'){
         document.getElementById('next').setAttribute('onclick','practiceDone();');
@@ -373,7 +378,6 @@ function trialFeedback(){
         document.getElementById('next').setAttribute('onclick','trialDone();');
     }
 
-    document.getElementById('spacesCorr').innerHTML = cellsCorr;
     document.getElementById('trialInstruct').innerHTML = '<br><br><br>';
 }
 
@@ -547,6 +551,15 @@ function practiceDone(){
     if(role == 'learner'){
         role = 'teacher';
         $('#practiceRole').html(role);
+        $('#roleInstruct').html('Now your job is to provide hints to your partner. ' + 
+            'You will select which half of the board to provide a hint about. ' +
+            'You can look at your options by pressing "z" and then plug in your hint by pressing "enter". ' +
+            'Your partner will then shoot the arrow at a space. ' +
+            'You and your partner will repeat until your partner hits the bullseye. ' +
+            '<b>Keep in mind that your partner knows that some of the spaces do not contain the bullseye.</b> ' +
+            'After successfully hitting the bullseye, you will be asked to paint in the 8 spaces you think your partner sees as potential bullseye locations. ' +
+            'You will then be provided with feedback about how many spaces you correctly guessed your partner can see. ' +
+            'Try to have your partner hit the bullseye in as few turns as possible.')
         document.getElementById('practice').style.display = 'none';
         document.getElementById('practiceInstruct').style.display = 'block';
     } else{
@@ -556,7 +569,6 @@ function practiceDone(){
 }
 
 function experimentDone(){
-    //window.location = "http://www.evullab.org/";
     submitExternal(client);
 }
 
