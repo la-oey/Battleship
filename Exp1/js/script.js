@@ -1,7 +1,7 @@
 var exptPart = "practice";
 var trialNumber = 0;
 var trialData = [];
-var Trial = 8;
+var Trial = 2;
 var rows = 4; //later switch both to 8
 var cols = 4;
 var teachOrigSpaces = [];
@@ -278,6 +278,7 @@ function trialStart(){
     turn = 0;
     guessedSpaces = [];
     eliminatedByTurn = [];
+    numElimRounds = [];
     create_table(rows, cols, 'gameboard', 'trialDiv');
     document.getElementById('trial').style.display = 'block';
     document.getElementById('next').disabled=true;
@@ -399,7 +400,7 @@ function trialDone(){
         numElimRounds: numElimRounds,
         guessedSpaces: guessedSpaces, //spaces guessed by teacher about learner's hypothesis space
         cellsCorrect: cellsCorr,
-        cellsPainted: cellsPainted});
+        cellsPainted: cellsPainted.slice(0)});
     // increment the trialNumber
     ++trialNumber;
     // if we are done with all trials, then go to completed page
@@ -546,7 +547,7 @@ function practiceDone(){
         numElimRounds: numElimRounds,
         guessedSpaces: guessedSpaces, //spaces guessed by teacher about learner's hypothesis space
         cellsCorrect: cellsCorr, //0 in the learner role
-        cellsPainted: cellsPainted}); //should be empty in learner role
+        cellsPainted: cellsPainted.slice(0)}); //should be empty in learner role
 
     if(role == 'learner'){
         role = 'teacher';
