@@ -453,7 +453,11 @@ function trialDone(){
         numElimRounds: numElimRounds,
         guessedSpaces: guessedSpaces, //spaces guessed by teacher about learner's hypothesis space
         cellsCorrect: cellsCorr,
-        cellsPainted: arrayToIndices(cellsPainted.slice(0))}); //records cloned cells
+        cellsPainted: arrayToIndices(cellsPainted.slice(0)),
+        playerPoints: plaPoints,
+        opponentPoints: oppPoints,
+        playerTotalPoints: plaTotalPoints,
+        opponentTotalPoints: oppTotalPoints}); //records cloned cells
     // increment the trialNumber
     ++trialNumber;
     // if we are done with all trials, then go to completed page
@@ -600,7 +604,11 @@ function practiceDone(){
         numElimRounds: numElimRounds,
         guessedSpaces: guessedSpaces, //spaces guessed by teacher about learner's hypothesis space
         cellsCorrect: cellsCorr, //0 in the learner role
-        cellsPainted: arrayToIndices(cellsPainted.slice(0))}); //should be empty in learner role
+        cellsPainted: arrayToIndices(cellsPainted.slice(0)),
+        playerPoints: plaPoints,
+        opponentPoints: oppPoints,
+        playerTotalPoints: plaTotalPoints,
+        opponentTotalPoints: oppTotalPoints}); //should be empty in learner role
 
     if(role == 'learner'){
         document.getElementById('next').setAttribute('onclick','trialPaint();');
