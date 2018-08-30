@@ -180,9 +180,22 @@ img {
 }
 
 #feedback {
-  position: relative;
-  left: 350px;
+  margin-left: 25%;
+  margin right: 25%;
   float: left;
+}
+
+.scoreboard {
+  margin-left: 25%;
+  margin-right: 25%;
+  padding: 20px;
+}
+
+.scoreCol {
+  width: 50%;
+  float: left;
+  font-size: 24px;
+  text-align: center;
 }
 
 .column {

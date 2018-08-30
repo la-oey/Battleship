@@ -21,6 +21,11 @@ var turnColors = [{color:'red', r:'255', g:'0', b:'0'},
                   {color:'blue', r:'0', g:'0', b:'255'},
                   {color:'purple', r:'255', g:'0', b:'255'}]
 var turn = 0;
+var maxpoints = rows + 1; //technically max points + 1
+var plaPoints = 0;
+var oppPoints = 0;
+var plaTotalPoints = 0;
+var oppTotalPoints = 0;
 var highlighted = 0;
 var inited = false;
 var numCellsPainted = 0;
@@ -32,7 +37,7 @@ var role = 'learner';
 var expt = {
     saveURL: 'submit.simple.php',
     sona: {
-            experiment_id: 1467,
+        experiment_id: 1467,
         credit_token: '0263273563ac435aaea995b95b9b8169'
     }
 };
@@ -79,15 +84,22 @@ function clickPostpractice(){
 
 function clickAssignment(){
     document.getElementById('assignment').style.display = 'none';
+    document.getElementById('scoreboard').style.display = 'block';
     document.getElementById('next').setAttribute('onclick','trialPaint();');
     exptPart = "experiment";
+    plaTotalPoints = 0;
+    $('#playerScore').html(plaTotalPoints);
+    oppTotalPoints = 0;
+    $('#opponentScore').html(oppTotalPoints);
+    $('#leader').html("The Match Begins!")
+
     //assign learner table for learning trials
     teachOrigSpaces = buildTeacherTable(rows, cols);
     learnOrigSpaces = buildLearnerTable(teachOrigSpaces);
     cellsPainted = [];
     numCellsPainted = 0;
     $('#gameboard').remove();
-    trialStart();
+    document.getElementById('nextScoreboard').setAttribute('onclick','trialStart();');
 }
 
 function teachTurn(openSpaces,battleshipLoc){
@@ -181,23 +193,23 @@ function clickBoard(selected){
         for(var c=halfSpaces[selected].lowerC; c<=halfSpaces[selected].higherC; c++){
             $('#gameboardCell_' + (r*cols+c)).css({'background-color':turnColors[turn].color,
                                         'opacity':'1'});
-            elimSpaces.push({r,c});
+            elimSpaces.push(r*cols+c);
         }
     }
     //check for matches between values eliminated and values in the learner's & teacher's open hypothesis space
     for(var e=0; e<elimSpaces.length; e++){
         for(var l=0; l<learnAvailable.length; l++){
-            if(elimSpaces[e].r==learnAvailable[l].r & elimSpaces[e].c==learnAvailable[l].c){
+            if(elimSpaces[e]==toIndex(learnAvailable[l])){
                 learnAvailable.splice(l,1);
             }
         }
         for(var g=0; g<guessAvailable.length; g++){
-            if(elimSpaces[e].r==guessAvailable[g].r & elimSpaces[e].c==guessAvailable[g].c){
+            if(elimSpaces[e]==toIndex(guessAvailable[g])){
                 guessAvailable.splice(g,1);
             }
         }
         for(var t=0; t<teachAvailable.length; t++){
-            if(elimSpaces[e].r==teachAvailable[t].r & elimSpaces[e].c==teachAvailable[t].c){
+            if(elimSpaces[e]==toIndex(teachAvailable[t])){
                 teachAvailable.splice(t,1);
             }
         }
@@ -207,14 +219,14 @@ function clickBoard(selected){
     //Computer's Guess
     //samples uniformly from set of hypothesis spaces not yet eliminated and not yet guessed
     var learnerGuess = sample(guessAvailable);
-    var guessedInd = learnerGuess.r * cols + learnerGuess.c;
-    if(guessedInd == (battleship.r * cols + battleship.c)){
+    var guessedInd = toIndex(learnerGuess);
+    if(guessedInd == toIndex(battleship)){
         $('#target').remove();
         $('#gameboardCell_'+guessedInd).prepend('<img id="targetHit" src="img/targetHit.png" />');
     } else{
         $('#gameboardCell_'+guessedInd).prepend('<img id="arrow" src="img/arrow.png" />');
     }
-    guessedSpaces.push(learnerGuess.r * cols + learnerGuess.c);
+    guessedSpaces.push(guessedInd);
     guessAvailable.splice(guessAvailable.indexOf(learnerGuess),1);
 
     //Explicit Feedback
@@ -226,7 +238,7 @@ function clickBoard(selected){
     $('#feedbackTurn').append("<font color='" + turnColors[turn].color + "'>Turn " + (turn+1) + ": " + numElimRound + "</font><br><br>")
     ++turn;
 
-    if(learnAvailable.length==1 || guessedInd==(battleship.r * cols+battleship.c)){
+    if(learnAvailable.length==1 || guessedInd==toIndex(battleship)){
         document.getElementById('gameboard').setAttribute('onclick','');
         document.getElementById('next').disabled=false;
         document.onkeydown = null;
@@ -258,9 +270,11 @@ function paint(index, marked){
     }
 }
 
-
 function trialStart(){
-    if(trialNumber > 0){
+    if(trialNumber == 0 && exptPart == "experiment"){
+        document.getElementById('scoreboard').style.display = 'none';
+    }
+    else if(trialNumber > 0){
         var source = document.getElementById('gameboard');
         var destination = document.getElementById('completeBoard');
         var copy = source.cloneNode(true);
@@ -270,10 +284,9 @@ function trialStart(){
         document.getElementById('gameboard').remove();
     }
 
-    if(exptPart == "practice"){
-        document.getElementById('practice').style.display = 'none';
+    //if(exptPart == "practice"){
         //outline of learner board?
-    }
+    //}
 
     turn = 0;
     guessedSpaces = [];
@@ -340,7 +353,7 @@ function trialPaint(){
     }
 
     for(var j=0; j<cellsPainted.length; j++){
-        index = cellsPainted[j].r * cols + cellsPainted[j].c;
+        index = toIndex(cellsPainted[j]);
         $('#gameboardCell_'+index).attr('onclick','paint('+index+',true);');
         $('#gameboardCell_'+index).attr('cellSelected','true');
         $('#gameboardCell_'+index).css({'background-color':'white'});
@@ -362,28 +375,68 @@ function trialFeedback(){
     $('#gameboard').hide();
     
     for(var a=0; a<learnOrigSpaces.length; a++){
-        index = learnOrigSpaces[a].r * cols + learnOrigSpaces[a].c;
+        index = toIndex(learnOrigSpaces[a]);
         if($('#gameboardCell_'+index).attr('cellSelected')=='true'){
             ++cellsCorr;
         }
     }
 
-    $('#feedback').html("<div id='paintFeedback'><b>Feedback: </b><p2 id='spacesCorr'>" + cellsCorr + " / " + learnOrigSpaces.length + "</p2> Spaces Correct</div><br><br><br>");
+    $('#feedback').html("<div id='paintFeedback'>Feedback: <p2 id='spacesCorr'>" + cellsCorr + " / " + learnOrigSpaces.length + "</p2> Spaces Correct</div><br><br><br>");
     $('#paintFeedback').css({'font-size':'36px'});
-    $('#spacesCorr').css({'padding-left':'20px', 'padding-right':'10px', 'font-size':'56px'})
+    $('#spacesCorr').css({'padding-left':'20px', 'padding-right':'10px'})
 
-    if(exptPart == 'practice'){
-        document.getElementById('next').setAttribute('onclick','practiceDone();');
-        
-    } else{
-        document.getElementById('next').setAttribute('onclick','trialDone();');
-    }
-
+    document.getElementById('next').setAttribute('onclick','tallyScore();');
     document.getElementById('trialInstruct').innerHTML = '<br><br><br>';
 }
 
+function tallyScore(){
+    plaPoints = maxpoints - turn;
+    console.log("player points: " + plaPoints);
+    plaTotalPoints = plaTotalPoints + plaPoints;
+    oppPoints = sampleInt(1,maxpoints-1);
+    console.log("opponent points: " + oppPoints);
+    oppTotalPoints = oppTotalPoints + oppPoints;
+
+    //update scoreboard
+    $('#playerScore').html(plaTotalPoints);
+    $('#opponentScore').html(oppTotalPoints);
+
+    if(trialNumber == Trial - 1){
+        if(plaTotalPoints == oppTotalPoints){
+            $('#leader').html("Tie!");
+        } else if(plaTotalPoints > oppTotalPoints){
+            $('#leader').html("Your Team Won!")
+        } else{
+            $('#leader').html("The Other Team Won!")
+        }
+    } else{
+        if(plaTotalPoints == oppTotalPoints){
+            $('#leader').html("The Score Is Tied!");
+        } else if(plaTotalPoints > oppTotalPoints){
+            $('#leader').html("Your Team Has The Lead!")
+        } else{
+            $('#leader').html("The Other Team Has The Lead!")
+        }
+    }
+
+    if(role=="learner"){
+        document.getElementById('practice').style.display = 'none';
+    } else{
+        document.getElementById('trial').style.display = 'none';
+    }
+
+    if(exptPart=="practice"){
+        document.getElementById('nextScoreboard').setAttribute('onclick','practiceDone();');
+    } else{
+        document.getElementById('nextScoreboard').setAttribute('onclick','trialDone();');
+    }
+
+    document.getElementById('scoreboard').style.display = 'block';
+    
+}
+
 function trialDone(){
-    document.getElementById('trial').style.display = 'none';
+    document.getElementById('scoreboard').style.display = 'none';
 
     // record what the subject said
     trialData.push({
@@ -392,19 +445,19 @@ function trialDone(){
         trialNumber: trialNumber,
         totalTurns: turn,
         numTeachSpaces: rows*cols,
-        teachOrigSpaces: teachOrigSpaces,
+        teachOrigSpaces: arrayToIndices(teachOrigSpaces),
         numLearnSpaces: rows*cols/2,
-        learnOrigSpaces: learnOrigSpaces,
-        bullseyeLocation: battleship,
+        learnOrigSpaces: arrayToIndices(learnOrigSpaces),
+        bullseyeLocation: toIndex(battleship),
         eliminatedByTurn: eliminatedByTurn,
         numElimRounds: numElimRounds,
         guessedSpaces: guessedSpaces, //spaces guessed by teacher about learner's hypothesis space
         cellsCorrect: cellsCorr,
-        cellsPainted: cellsPainted.slice(0)});
+        cellsPainted: arrayToIndices(cellsPainted.slice(0))}); //records cloned cells
     // increment the trialNumber
     ++trialNumber;
     // if we are done with all trials, then go to completed page
-    if(trialNumber >= Trial){
+    if(trialNumber == Trial){
         $('#finalCorr').html((cellsCorr/learnOrigSpaces.length*100).toFixed(2));
 
         $('#gameboard').show();
@@ -414,13 +467,12 @@ function trialDone(){
         copy.setAttribute('id', 'finalBoard');
         destination.parentNode.replaceChild(copy, destination);
 
-
         create_table(rows, cols, 'key', 'finalKey');
         for(var i=0; i<rows*cols; i++){
             $('#keyCell_'+i).css({'background-color':'red'});
         }
         for(var j=0; j<learnOrigSpaces.length; j++){
-            ind = learnOrigSpaces[j].r*cols+learnOrigSpaces[j].c;
+            ind = toIndex(learnOrigSpaces[j]);
             $('#keyCell_'+ind).css({'background-color':'white'});
         }
 
@@ -438,7 +490,7 @@ function trialDone(){
 }
 
 function guess(index){
-    if(index == (battleship.r * cols + battleship.c)){
+    if(index == toIndex(battleship)){
         $('#arrow_'+index).remove();
         $('#practiceLearnCell_'+index).prepend('<img src="img/targetHit.png"/>');
         guessCheck = true;
@@ -454,13 +506,13 @@ function guess(index){
 function teacherHint(){
     var elimSpaces = [];
     var halfSpaces = teachTurn(teachAvailable,battleship);
-    var move = sample(halfSpaces); //replace for passive learner expt
+    var move = sample(halfSpaces);
 
     for(var r=move.lowerR; r<=move.higherR; r++){
         for(var c=move.lowerC; c<=move.higherC; c++){
             for(var l=0; l<learnAvailable.length; l++){
                 if(learnAvailable[l].r==r && learnAvailable[l].c==c){
-                    index = r * cols + c;
+                    index = toIndex(learnAvailable[l]);
                     if(guessedSpaces.indexOf(index) == -1){
                         $('#arrow_'+index).remove();
                     }
@@ -471,20 +523,20 @@ function teacherHint(){
             }
 
             $('#practiceLearnCell_' + (r*cols+c)).css('box-shadow','inset 0 0 0 1000px rgba('+turnColors[turn].r+','+turnColors[turn].g+','+turnColors[turn].b+',.5)');
-            elimSpaces.push({r,c});
+            elimSpaces.push(r*cols+c);
         }
     }
 
     var numElimRound = 0;
     for(var e=0; e<elimSpaces.length; e++){
         for(var l=0; l<learnAvailable.length; l++){
-            if(elimSpaces[e].r==learnAvailable[l].r & elimSpaces[e].c==learnAvailable[l].c){
+            if(elimSpaces[e]==toIndex(learnAvailable[l])){
                 learnAvailable.splice(l,1);
                 numElimRound++;
             }
         }
         for(var t=0; t<teachAvailable.length; t++){
-            if(elimSpaces[e].r==teachAvailable[t].r & elimSpaces[e].c==teachAvailable[t].c){
+            if(elimSpaces[e]==toIndex(teachAvailable[t])){
                 teachAvailable.splice(t,1);
             }
         }
@@ -492,7 +544,6 @@ function teacherHint(){
 
     eliminatedByTurn.push(elimSpaces);
     numElimRounds.push(numElimRound)
-
 }
 
 function practiceLearner(){
@@ -504,7 +555,7 @@ function practiceLearner(){
     create_table(rows, cols, 'practiceLearn', 'trialDiv_learner');
     $('.practiceLearnCell').css({'background-color':'gray'});
     for(var i=0; i<learnOrigSpaces.length; i++){
-        ind = learnOrigSpaces[i].r * cols + learnOrigSpaces[i].c;
+        ind = toIndex(learnOrigSpaces[i]);
         $('#practiceLearnCell_'+ind).css({'background-color':'white', 'opacity':'0'});
         $('#practiceLearnCell_'+ind).attr('onclick','guess('+ind+')');
         $('#practiceLearnCell_'+ind).prepend('<img id="arrow_' + ind + '" src="img/arrow.png"/>');
@@ -533,23 +584,26 @@ function practiceLearner(){
 
 function practiceDone(){
     // record what the subject said
+    document.getElementById('scoreboard').style.display = 'none';
+
     trialData.push({
         exptPart: exptPart,
         role: role,
         trialNumber: trialNumber,
         totalTurns: turn,
         numTeachSpaces: rows*cols,
-        teachOrigSpaces: teachOrigSpaces,
+        teachOrigSpaces: arrayToIndices(teachOrigSpaces),
         numLearnSpaces: rows*cols/2,
-        learnOrigSpaces: learnOrigSpaces,
-        bullseyeLocation: battleship,
+        learnOrigSpaces: arrayToIndices(learnOrigSpaces),
+        bullseyeLocation: toIndex(battleship),
         eliminatedByTurn: eliminatedByTurn,
         numElimRounds: numElimRounds,
         guessedSpaces: guessedSpaces, //spaces guessed by teacher about learner's hypothesis space
         cellsCorrect: cellsCorr, //0 in the learner role
-        cellsPainted: cellsPainted.slice(0)}); //should be empty in learner role
+        cellsPainted: arrayToIndices(cellsPainted.slice(0))}); //should be empty in learner role
 
     if(role == 'learner'){
+        document.getElementById('next').setAttribute('onclick','trialPaint();');
         role = 'teacher';
         $('#practiceRole').html(role);
         $('#roleInstruct').html('Now your job is to provide hints to your partner. ' + 
@@ -561,10 +615,8 @@ function practiceDone(){
             'After successfully hitting the bullseye, you will be asked to paint in the 8 spaces you think your partner sees as potential bullseye locations. ' +
             'You will then be provided with feedback about how many spaces you correctly guessed your partner can see. ' +
             'Try to have your partner hit the bullseye in as few turns as possible.')
-        document.getElementById('practice').style.display = 'none';
         document.getElementById('practiceInstruct').style.display = 'block';
     } else{
-        document.getElementById('trial').style.display = 'none';
         document.getElementById('postpractice').style.display = 'block';
     }
 }
@@ -585,6 +637,10 @@ function sample_without_replacement(sampleSize, sample){
 
 function sample(availSpaces){
     return(availSpaces[Math.floor(Math.random() * availSpaces.length)]);
+}
+
+function sampleInt(min,max) {
+  return(Math.floor(Math.random() * (max-min)) + min);
 }
 
 function create_table(rows, cols, tabID, divID) { //rows * cols = number of exemplars
@@ -613,6 +669,18 @@ function buildTeacherTable(row, col){
 
 function buildLearnerTable(teacherTable){
     return(sample_without_replacement(teacherTable.length/2, teacherTable));
+}
+
+function toIndex(cell){
+    return(cell.r * cols + cell.c);
+}
+
+function arrayToIndices(array){
+    newArray = [];
+    for(var i=0; i<array.length; i++){
+        newArray.push(toIndex(array[i]));
+    }
+    return(newArray);
 }
 
 
