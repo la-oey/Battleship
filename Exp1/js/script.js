@@ -1,7 +1,7 @@
 var exptPart = "practice";
 var trialNumber = 0;
 var trialData = [];
-var Trial = 8;
+var Trial = 2;
 var rows = 4; //later switch both to 8
 var cols = 4;
 var teachOrigSpaces = [];
@@ -472,9 +472,10 @@ function trialDone(){
         bullseyeLocation: toIndex(battleship),
         eliminatedByTurn: eliminatedByTurn,
         numElimRounds: numElimRounds,
-        guessedSpaces: guessedSpaces, //spaces guessed by teacher about learner's hypothesis space
+        guessedSpaces: guessedSpaces, //number of spaces guessed by teacher about learner's hypothesis space
         cellsCorrect: cellsCorr,
         cellsPainted: arrayToIndices(cellsPainted.slice(0)),
+        uncertain: arrayToIndices(uncertain.slice(0)),
         playerPoints: plaPoints,
         opponentPoints: oppPoints,
         playerTotalPoints: plaTotalPoints,
@@ -626,6 +627,7 @@ function practiceDone(){
         guessedSpaces: guessedSpaces, //spaces guessed by teacher about learner's hypothesis space
         cellsCorrect: cellsCorr, //0 in the learner role
         cellsPainted: arrayToIndices(cellsPainted.slice(0)),
+        uncertain: arrayToIndices(uncertain.slice(0)),
         playerPoints: plaPoints,
         opponentPoints: oppPoints,
         playerTotalPoints: plaTotalPoints,
@@ -716,7 +718,7 @@ function arrayToIndices(array){
 
 function randGeom(p){
     var val = Math.floor(Math.log(1-Math.random())/Math.log(1-p));
-    if(val >= maxpoints){
+    if(val >= (maxpoints-1)){
         return(maxpoints - 1);
     } else{
         return(val+1);
