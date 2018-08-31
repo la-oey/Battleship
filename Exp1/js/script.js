@@ -1,7 +1,7 @@
 var exptPart = "practice";
 var trialNumber = 0;
 var trialData = [];
-var Trial = 2;
+var Trial = 8;
 var rows = 4; //later switch both to 8
 var cols = 4;
 var teachOrigSpaces = [];
