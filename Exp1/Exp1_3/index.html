@@ -38,7 +38,7 @@ $(document).ready(function(){
 <body onload="pageLoad();">
 
   <div id="consent" class="screen">
-  	<h1 class="mtitle" >University of California, San Diego<br>
+  	<h1 class="mtitle">University of California, San Diego<br>
   	Consent to act as a research subject</h1>
   	<p>  Edward Vul, Ph.D. is conducting a research study to find out more about attention, distraction and learning.
               You have been asked to participate because you are an undergraduate here at UCSD. <br><br>
@@ -127,7 +127,7 @@ $(document).ready(function(){
 
 <div id="assignment" class="screen">
   <p class="mtitle">Your assigned role:<br><br>
-    <p2 id="assignedRole">Teacher</p3><br><br>
+    <p2 id="assignedRole">Teacher</p2><br><br>
   </p>
   <button class="big-button" onclick="clickAssignment();">Click to continue</button>
 </div>
@@ -143,7 +143,7 @@ $(document).ready(function(){
 	<button class="big-button" id="next" type="button" onclick="trialPaint();"  >Next!</button>
 </div>
 
-<div id="completed" class="screen">
+<div id="finalscore" class="screen">
     <center><h3>Final Percent Correct: <p2 id="finalCorr"></p2>%</h3></center>
     <div class="column finalCol" id="finalBoardCol">
       <p class="finalLabel">Final Board:</p>
@@ -152,9 +152,21 @@ $(document).ready(function(){
     <div class="column finalCol" id="keyCol">
       <p class="finalLabel">Key:</p>
       <div id="finalKey"></div>
-    </div>
-    <center><p id="thankyou"><br><br>Thank you for your participation!</p></center><br>
-  <button class="big-button" id="finished" onclick="experimentDone();">Finished!</button>
+    </div><br><br>
+  <button class="big-button" onclick="clickFinalScore();">Click to continue</button>
 </div>
+
+<div id="participantFeedback" class="screen">
+	<center><h1>Provide us with feedback!</h1></center><br>
+	<p id="askFeedback">Do you have any feedback you would like to provide about the task?<br>Did you find the task confusing?<br>We appreciate your feedback. Thank you.</p><br>
+	<center><textarea id="textFeedback" rows="5" cols="100"></textarea></center><br><br><br>
+	<button class="big-button" onclick="clickFeedback();">Finished!</button>
+</div>
+
+<div id="completed" class="screen">
+	<center><h1 id="thankyou" class="mtitle">Thank you for your participation!</h1></center><br><br>
+	<button class="big-button" id="finished" onclick="experimentDone();">Finished!</button>
+</div>
+
 
 </body>

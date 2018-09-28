@@ -1,16 +1,20 @@
 var exptPart = "practice";
+var role = 'learner';
 var trialNumber = 0;
 var trialData = [];
-var Trial = 8;
-var rows = 4; //later switch both to 8
+var Trial = 8; //switch to 8
+var rows = 4; 
 var cols = 4;
+var penalty = 3; // x * penalty second delay for turns & cells painted incorrectly
 var teachOrigSpaces = [];
 var learnOrigSpaces = [];
 var teachAvailable = [];
 var learnAvailable = [];
 var guessAvailable = [];
+var halfSpacesByTurn = [];
 var guessedSpaces = []; //array of guessed spaces indices
 var eliminatedByTurn = [];
+var eliminatedChoice = [];
 var numElimRounds = [];
 var numRemaining = 0;
 var battleship = null;
@@ -34,7 +38,9 @@ var cellsPainted = [];
 var uncertain = []; //painted but w/ ?
 var practiceGuess = true;
 var guessCheck = false;
-var role = 'learner';
+var startTime = null;
+var teachRT = null;
+var paintRT = null;
 var expt = {
     saveURL: 'submit.simple.php',
     sona: {
@@ -187,6 +193,11 @@ function highlight(check){
 function clickBoard(selected){
     var elimSpaces = [];
     var halfSpaces = teachTurn(teachAvailable,battleship);
+    var halfSpacesAsByte = [];
+    for(var i=0; i<halfSpaces.length; i++){
+        halfSpacesAsByte.push(toByte(halfSpaces[i], true, false));
+    }
+    halfSpacesByTurn.push(halfSpacesAsByte);
     //var move = sample(halfSpaces); //replace for passive learner expt
     
     if(halfSpaces.length==1){ //checks if there is only one potential byte to eliminate
@@ -218,6 +229,7 @@ function clickBoard(selected){
         }
     }
     eliminatedByTurn.push(elimSpaces);
+    eliminatedChoice.push(selected)
 
     //Computer's Guess
     //samples uniformly from set of hypothesis spaces not yet eliminated and not yet guessed
@@ -302,7 +314,9 @@ function trialStart(){
     turn = 0;
     guessedSpaces = [];
     eliminatedByTurn = [];
+    eliminatedChoice = [];
     numElimRounds = [];
+    halfSpacesByTurn = [];
     create_table(rows, cols, 'gameboard', 'trialDiv');
     document.getElementById('trial').style.display = 'block';
     document.getElementById('next').disabled=true;
@@ -344,9 +358,13 @@ function trialStart(){
             clickBoard(Math.abs(highlighted-1));
         }
     };
+
+    startTime = Date.now();
 }
 
 function trialPaint(){
+    teachRT = Date.now() - startTime; //records time to complete "teaching" stage
+
     //copy board
     var source = document.getElementById('gameboard');
     var destination = document.getElementById('completeBoard');
@@ -386,9 +404,13 @@ function trialPaint(){
     document.getElementById('trialInstruct').innerHTML = 'Use your mouse to paint the spaces that you think the learner can see.<br><br>';
     document.getElementById('feedback').innerHTML = "<br>Spaces Painted: <p2 id='spacesPainted'></p2> / " + learnOrigSpaces.length + "<br><br><br>";
     document.getElementById('spacesPainted').innerHTML = numCellsPainted;
+
+    startTime = Date.now();
 }
 
 function trialFeedback(){
+    paintRT = Date.now() - startTime; //records time to complete "painting" stage
+
     cellsCorr = 0;
     document.getElementById('feedbackTurn').innerHTML = '';
     document.getElementById('next').disabled = true;
@@ -409,7 +431,7 @@ function trialFeedback(){
 
     document.getElementById('next').setAttribute('onclick','tallyScore();');
 
-    var count = (learnOrigSpaces.length - cellsCorr) * 3;
+    var count = (learnOrigSpaces.length - cellsCorr) * penalty;
     $('#waitCells').html(learnOrigSpaces.length - cellsCorr);
     $('#waitTrial').html(count);
     if(count !== 0){
@@ -460,6 +482,7 @@ function tallyScore(){
 
     if(role=="learner"){
         document.getElementById('practice').style.display = 'none';
+        teachRT = Date.now() - startTime;
     } else{
         document.getElementById('trial').style.display = 'none';
     }
@@ -470,7 +493,7 @@ function tallyScore(){
         document.getElementById('nextScoreboard').setAttribute('onclick','trialDone();');
     }
 
-    var count = turn * 3;
+    var count = turn * penalty;
     document.getElementById('nextScoreboard').disabled = true;
     $('#waitTurns').html(turn);
     $('#waitScoreboard').html(count);
@@ -494,27 +517,36 @@ function tallyScore(){
 function trialDone(){
     document.getElementById('scoreboard').style.display = 'none';
 
-    // record what the subject said
+    var eliminatedByTurnByte = [];
+    for(var i=0; i<eliminatedByTurn.length; i++){
+        eliminatedByTurnByte.push(toByte(eliminatedByTurn[i], false, false));
+    }
+
+    // record what the subject did
     trialData.push({
-        exptPart: exptPart,
-        role: role,
-        trialNumber: trialNumber,
-        totalTurns: turn,
-        numTeachSpaces: rows*cols,
-        teachOrigSpaces: arrayToIndices(teachOrigSpaces),
-        numLearnSpaces: rows*cols/2,
-        learnOrigSpaces: arrayToIndices(learnOrigSpaces),
-        bullseyeLocation: toIndex(battleship),
-        eliminatedByTurn: eliminatedByTurn,
+        exptPart: exptPart, // String: {"practice","experiment"}
+        role: role, // String: {"learner", "teacher"}
+        trialNumber: trialNumber, // Int: {0:7=Trial-1}
+        totalTurns: turn, // Int: {1:4=log2(rows^2)}
+        numTeachSpaces: rows*cols, // Int: 16=rows^2
+        teachOrigSpaces: toByte(arrayToIndices(teachOrigSpaces)), // String: Char[16]
+        numLearnSpaces: rows*cols/2, // Int: 8=rows^2/2
+        learnOrigSpaces: toByte(arrayToIndices(learnOrigSpaces)), // String: Char[16]
+        bullseyeLocation: toIndex(battleship), // Int: {0:15=rows^2-1}
+        halfSpacesByTurn: halfSpacesByTurn, // 
+        eliminatedChoice: eliminatedChoice,
+        eliminatedByTurn: eliminatedByTurnByte,
         numElimRounds: numElimRounds,
         guessedSpaces: guessedSpaces, //number of spaces guessed by teacher about learner's hypothesis space
         cellsCorrect: cellsCorr,
-        cellsPainted: arrayToIndices(cellsPainted.slice(0)),
-        uncertain: arrayToIndices(uncertain.slice(0)),
+        cellsPainted: toByte(arrayToIndices(cellsPainted.slice(0))), // String: Char[16]
+        uncertain: toByte(arrayToIndices(uncertain.slice(0))), // String: Char[16]
         playerPoints: plaPoints,
         opponentPoints: oppPoints,
         playerTotalPoints: plaTotalPoints,
-        opponentTotalPoints: oppTotalPoints}); //records cloned cells
+        opponentTotalPoints: oppTotalPoints,
+        teachRT: teachRT,
+        paintRT: paintRT}); //records cloned cells
     // increment the trialNumber
     ++trialNumber;
     // if we are done with all trials, then go to completed page
@@ -537,12 +569,8 @@ function trialDone(){
             $('#keyCell_'+ind).css({'background-color':'white'});
         }
 
-        // these lines write to server
-        console.log(trialData);
-        data = {client: client, trials: trialData};
-        writeServer(data);
         document.getElementById('trial').style.display = 'none';
-        document.getElementById('completed').style.display = 'block';
+        document.getElementById('finalscore').style.display = 'block';
     }
     else {
         document.getElementById('next').setAttribute('onclick','trialPaint();');
@@ -567,7 +595,14 @@ function guess(index){
 function teacherHint(){
     var elimSpaces = [];
     var halfSpaces = teachTurn(teachAvailable,battleship);
-    var move = sample(halfSpaces);
+    var halfSpacesAsByte = [];
+    for(var i=0; i<halfSpaces.length; i++){
+        halfSpacesAsByte.push(toByte(halfSpaces[i], true, false));
+    }
+    halfSpacesByTurn.push(halfSpacesAsByte);
+    var selected = sampleInt(0,1);
+    eliminatedChoice.push(selected);
+    var move = halfSpaces[selected];
 
     for(var r=move.lowerR; r<=move.higherR; r++){
         for(var c=move.lowerC; c<=move.higherC; c++){
@@ -641,11 +676,18 @@ function practiceLearner(){
             practiceGuess = false;
         }
     }, 1000)
+
+    startTime = Date.now();
 }
 
 function practiceDone(){
     // record what the subject said
     document.getElementById('scoreboard').style.display = 'none';
+
+    var eliminatedByTurnByte = [];
+    for(var i=0; i<eliminatedByTurn.length; i++){
+        eliminatedByTurnByte.push(toByte(eliminatedByTurn[i], false, false));
+    }
 
     trialData.push({
         exptPart: exptPart,
@@ -653,20 +695,24 @@ function practiceDone(){
         trialNumber: trialNumber,
         totalTurns: turn,
         numTeachSpaces: rows*cols,
-        teachOrigSpaces: arrayToIndices(teachOrigSpaces),
+        teachOrigSpaces: toByte(arrayToIndices(teachOrigSpaces)),
         numLearnSpaces: rows*cols/2,
-        learnOrigSpaces: arrayToIndices(learnOrigSpaces),
+        learnOrigSpaces: toByte(arrayToIndices(learnOrigSpaces)),
         bullseyeLocation: toIndex(battleship),
-        eliminatedByTurn: eliminatedByTurn,
+        halfSpacesByTurn: halfSpacesByTurn,
+        eliminatedByChoice: eliminatedChoice,
+        eliminatedByTurn: eliminatedByTurnByte,
         numElimRounds: numElimRounds,
         guessedSpaces: guessedSpaces, //spaces guessed by teacher about learner's hypothesis space
         cellsCorrect: cellsCorr, //0 in the learner role
-        cellsPainted: arrayToIndices(cellsPainted.slice(0)),
-        uncertain: arrayToIndices(uncertain.slice(0)),
+        cellsPainted: toByte(arrayToIndices(cellsPainted.slice(0))),
+        uncertain: toByte(arrayToIndices(uncertain.slice(0))),
         playerPoints: plaPoints,
         opponentPoints: oppPoints,
         playerTotalPoints: plaTotalPoints,
-        opponentTotalPoints: oppTotalPoints}); //should be empty in learner role
+        opponentTotalPoints: oppTotalPoints,
+        teachRT: teachRT,
+        paintRT: paintRT}); //should be empty in learner role
 
     if(role == 'learner'){
         document.getElementById('next').setAttribute('onclick','trialPaint();');
@@ -689,10 +735,52 @@ function practiceDone(){
     }
 }
 
+function clickFinalScore(){
+    document.getElementById('finalscore').style.display = 'none';
+    document.getElementById('participantFeedback').style.display = 'block';
+}
+
+function clickFeedback(){
+    document.getElementById('participantFeedback').style.display = 'none';
+    document.getElementById('completed').style.display = 'block';
+
+    trialData.push({
+        exptPart: 'feedback',
+        role: $('#textFeedback').val(),
+        trialNumber: 'NA',
+        totalTurns: 'NA',
+        numTeachSpaces: 'NA',
+        teachOrigSpaces: 'NA',
+        numLearnSpaces: 'NA',
+        learnOrigSpaces: 'NA',
+        bullseyeLocation: 'NA',
+        halfSpacesByTurn: 'NA',
+        eliminatedByChoice: 'NA',
+        eliminatedByTurn: 'NA',
+        numElimRounds: 'NA',
+        guessedSpaces: 'NA',
+        cellsCorrect: 'NA',
+        cellsPainted: 'NA',
+        uncertain: 'NA',
+        playerPoints: 'NA',
+        opponentPoints: 'NA',
+        playerTotalPoints: 'NA',
+        opponentTotalPoints: 'NA',
+        teachRT: 'NA',
+        paintRT: 'NA'});
+
+    // these lines write to server
+    // console.log(trialData);
+    data = {client: client, trials: trialData};
+    writeServer(data);
+}
+
 function experimentDone(){
     submitExternal(client);
 }
 
+
+//Miscellaneous Functions
 function sample_without_replacement(sampleSize, sample){
   var urn = sample.slice(0);
   var return_sample = [];
@@ -741,6 +829,46 @@ function buildLearnerTable(teacherTable){
 
 function toIndex(cell){
     return(cell.r * cols + cell.c);
+}
+
+//create array of 0s and 1s of the board length
+// learner/teacher/painted board
+//      0 = cells closed
+//      1 = cells open/painted, e.g. teacher board = 11111111
+// eliminated by turn
+//      0 = cells removed in a turn
+//      1 = cells not removed in a turn
+// uncertain
+//      0 = not marked as being uncertain
+//      1 = marked as being uncertain
+function toByte(array, halfSpace=false, inverse=true){ //inverse applied for eliminated by turn
+    var byte = "";
+    var yes = "1"
+    var no = "0"
+    if(!halfSpace){ //coverts standard arrays (array of true cells) to byte
+        if(!inverse){
+            yes = "0"
+            no = "1"
+        }
+        for(var i=0; i<rows*cols; i++){
+            if(array.indexOf(i) !== -1){
+                byte = byte + yes;
+            } else{
+                byte = byte + no;
+            }
+        }
+    } else{ //converts halfSpace array (array of lower & upper row & column) to byte
+        for(var i=0; i<rows*cols; i++){
+            if(Math.floor(i / rows) >= array.lowerR && Math.floor(i / rows) <= array.higherR &&
+                i % rows >= array.lowerC && i % rows <= array.higherC){
+                byte = byte + yes;
+            } else{
+                byte = byte + no;
+            }
+        }
+    }
+
+    return(byte);
 }
 
 function arrayToIndices(array){
