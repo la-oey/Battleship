@@ -11,10 +11,11 @@ var learnOrigSpaces = [];
 var teachAvailable = [];
 var learnAvailable = [];
 var guessAvailable = [];
+var spacesOpenAtTurnStart = [];
 var halfSpacesByTurn = [];
-var guessedSpaces = []; //array of guessed spaces indices
-var eliminatedByTurn = [];
+var halfSpacesNumElimByTurn = [];
 var eliminatedChoice = [];
+var guessedSpaces = []; //array of guessed spaces indices
 var numElimRounds = [];
 var numRemaining = 0;
 var battleship = null;
@@ -193,11 +194,23 @@ function highlight(check){
 function clickBoard(selected){
     var elimSpaces = [];
     var halfSpaces = teachTurn(teachAvailable,battleship);
+    spacesOpenAtTurnStart.push(toByte(arrayToIndices(teachAvailable.slice(0))));
+
     var halfSpacesAsByte = [];
+    var halfSpacesNumElim = [];
     for(var i=0; i<halfSpaces.length; i++){
         halfSpacesAsByte.push(toByte(halfSpaces[i], true, false));
+        var singHalfSpacesNumElim = 0;
+        for(var j=0; j<learnAvailable.length; j++){
+            if(learnAvailable[j].r >= halfSpaces[i].lowerR && learnAvailable[j].r <= halfSpaces[i].higherR &&
+               learnAvailable[j].c >= halfSpaces[i].lowerC && learnAvailable[j].c <= halfSpaces[i].higherC){
+                singHalfSpacesNumElim += 1;
+            }
+        }
+        halfSpacesNumElim.push(singHalfSpacesNumElim);
     }
     halfSpacesByTurn.push(halfSpacesAsByte);
+    halfSpacesNumElimByTurn.push(halfSpacesNumElim);
     //var move = sample(halfSpaces); //replace for passive learner expt
     
     if(halfSpaces.length==1){ //checks if there is only one potential byte to eliminate
@@ -228,7 +241,6 @@ function clickBoard(selected){
             }
         }
     }
-    eliminatedByTurn.push(elimSpaces);
     eliminatedChoice.push(selected)
 
     //Computer's Guess
@@ -313,10 +325,12 @@ function trialStart(){
 
     turn = 0;
     guessedSpaces = [];
-    eliminatedByTurn = [];
     eliminatedChoice = [];
     numElimRounds = [];
+    spacesOpenAtTurnStart = [];
     halfSpacesByTurn = [];
+    halfSpacesNumElimByTurn = [];
+
     create_table(rows, cols, 'gameboard', 'trialDiv');
     document.getElementById('trial').style.display = 'block';
     document.getElementById('next').disabled=true;
@@ -354,7 +368,7 @@ function trialStart(){
             inited = true;
         }
 
-        if(keyCode==13 & inited){
+        if(keyCode==13 && inited){
             clickBoard(Math.abs(highlighted-1));
         }
     };
@@ -517,11 +531,6 @@ function tallyScore(){
 function trialDone(){
     document.getElementById('scoreboard').style.display = 'none';
 
-    var eliminatedByTurnByte = [];
-    for(var i=0; i<eliminatedByTurn.length; i++){
-        eliminatedByTurnByte.push(toByte(eliminatedByTurn[i], false, false));
-    }
-
     // record what the subject did
     trialData.push({
         exptPart: exptPart, // String: {"practice","experiment"}
@@ -533,9 +542,10 @@ function trialDone(){
         numLearnSpaces: rows*cols/2, // Int: 8=rows^2/2
         learnOrigSpaces: toByte(arrayToIndices(learnOrigSpaces)), // String: Char[16]
         bullseyeLocation: toIndex(battleship), // Int: {0:15=rows^2-1}
+        spacesOpenAtTurnStart: spacesOpenAtTurnStart,
         halfSpacesByTurn: halfSpacesByTurn, // 
+        halfSpacesNumElimByTurn: halfSpacesNumElimByTurn,
         eliminatedChoice: eliminatedChoice,
-        eliminatedByTurn: eliminatedByTurnByte,
         numElimRounds: numElimRounds,
         guessedSpaces: guessedSpaces, //number of spaces guessed by teacher about learner's hypothesis space
         cellsCorrect: cellsCorr,
@@ -595,11 +605,22 @@ function guess(index){
 function teacherHint(){
     var elimSpaces = [];
     var halfSpaces = teachTurn(teachAvailable,battleship);
+    spacesOpenAtTurnStart.push(toByte(arrayToIndices(teachAvailable.slice(0))));
     var halfSpacesAsByte = [];
+    var halfSpacesNumElim = [];
     for(var i=0; i<halfSpaces.length; i++){
         halfSpacesAsByte.push(toByte(halfSpaces[i], true, false));
+        var singHalfSpacesNumElim = 0;
+        for(var j=0; j<learnAvailable.length; j++){
+            if(learnAvailable[j].r >= halfSpaces[i].lowerR && learnAvailable[j].r <= halfSpaces[i].higherR &&
+               learnAvailable[j].c >= halfSpaces[i].lowerC && learnAvailable[j].c <= halfSpaces[i].higherC){
+                singHalfSpacesNumElim += 1;
+            }
+        }
+        halfSpacesNumElim.push(singHalfSpacesNumElim);
     }
     halfSpacesByTurn.push(halfSpacesAsByte);
+    halfSpacesNumElimByTurn.push(halfSpacesNumElim);
     var selected = sampleInt(0,1);
     eliminatedChoice.push(selected);
     var move = halfSpaces[selected];
@@ -638,7 +659,6 @@ function teacherHint(){
         }
     }
 
-    eliminatedByTurn.push(elimSpaces);
     numElimRounds.push(numElimRound)
 }
 
@@ -684,11 +704,6 @@ function practiceDone(){
     // record what the subject said
     document.getElementById('scoreboard').style.display = 'none';
 
-    var eliminatedByTurnByte = [];
-    for(var i=0; i<eliminatedByTurn.length; i++){
-        eliminatedByTurnByte.push(toByte(eliminatedByTurn[i], false, false));
-    }
-
     trialData.push({
         exptPart: exptPart,
         role: role,
@@ -699,9 +714,10 @@ function practiceDone(){
         numLearnSpaces: rows*cols/2,
         learnOrigSpaces: toByte(arrayToIndices(learnOrigSpaces)),
         bullseyeLocation: toIndex(battleship),
+        spacesOpenAtTurnStart: spacesOpenAtTurnStart,
         halfSpacesByTurn: halfSpacesByTurn,
+        halfSpacesNumElimByTurn: halfSpacesNumElimByTurn,
         eliminatedByChoice: eliminatedChoice,
-        eliminatedByTurn: eliminatedByTurnByte,
         numElimRounds: numElimRounds,
         guessedSpaces: guessedSpaces, //spaces guessed by teacher about learner's hypothesis space
         cellsCorrect: cellsCorr, //0 in the learner role
@@ -754,9 +770,10 @@ function clickFeedback(){
         numLearnSpaces: 'NA',
         learnOrigSpaces: 'NA',
         bullseyeLocation: 'NA',
+        spacesOpenAtTurnStart: 'NA',
         halfSpacesByTurn: 'NA',
+        halfSpacesNumElimByTurn: 'NA',
         eliminatedByChoice: 'NA',
-        eliminatedByTurn: 'NA',
         numElimRounds: 'NA',
         guessedSpaces: 'NA',
         cellsCorrect: 'NA',
@@ -770,7 +787,7 @@ function clickFeedback(){
         paintRT: 'NA'});
 
     // these lines write to server
-    // console.log(trialData);
+    //console.log(trialData);
     data = {client: client, trials: trialData};
     writeServer(data);
 }
@@ -845,11 +862,11 @@ function toByte(array, halfSpace=false, inverse=true){ //inverse applied for eli
     var byte = "";
     var yes = "1"
     var no = "0"
+    if(!inverse){
+        yes = "0"
+        no = "1"
+    }
     if(!halfSpace){ //coverts standard arrays (array of true cells) to byte
-        if(!inverse){
-            yes = "0"
-            no = "1"
-        }
         for(var i=0; i<rows*cols; i++){
             if(array.indexOf(i) !== -1){
                 byte = byte + yes;
