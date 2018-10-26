@@ -35,6 +35,9 @@ var plaTotalPoints = 0;
 var oppTotalPoints = 0;
 var highlighted = 0;
 var inited = false;
+var isPaused = true;
+var tutorialPause0 = true;
+var tutorialPause1 = true;
 var numCellsPainted = 0;
 var cellsCorr = 0;
 var cellsPainted = [];
@@ -61,31 +64,24 @@ function pageLoad(){
 function clickConsent(){
     document.getElementById('consent').style.display = 'none';
     document.getElementById('instructions').style.display = 'block';
-    //document.getElementById('selectDiff').style.display = 'block';
 }
 
-// function clickDiff(){
-//     document.getElementById('selectDiff').style.display = 'none';
-//     document.getElementById('instructions').style.display = 'block';
-// }
+// Instructions
 
 function clickInstructions(){
-    // rows = $('input[name=boardDim]:checked').val();
-    // cols = $('input[name=boardDim]:checked').val();
     document.getElementById('instructions').style.display = 'none';
     teachOrigSpaces = buildTeacherTable(rows, cols);
     learnOrigSpaces = buildLearnerTable(teachOrigSpaces);
-    document.getElementById('practiceInstruct').style.display = 'block';
+    practiceLearner();
 }
 
-function clickPracticeRole(){
-    document.getElementById('practiceInstruct').style.display = 'none';
-    if(role == 'learner'){
-        practiceLearner();
-    } else{
-        trialStart();
-    }
-}
+
+
+
+
+
+
+
 
 function clickPostpractice(){
     document.getElementById('postpractice').style.display = 'none';
@@ -113,6 +109,8 @@ function clickAssignment(){
     $('#gameboard').remove();
     document.getElementById('nextScoreboard').setAttribute('onclick','trialStart();');
 }
+
+// Experiment
 
 function teachTurn(openSpaces,battleshipLoc){
     var halfSpaces = [];
@@ -506,6 +504,10 @@ function tallyScore(){
     }
 
     if(exptPart=="practice"){
+        if(practiceTrialNumber == 0){
+            var popup = document.getElementById("popupInstruct1");
+            popup.classList.toggle("show");
+        }
         document.getElementById('nextScoreboard').setAttribute('onclick','practiceDone();');
     } else{
         document.getElementById('nextScoreboard').setAttribute('onclick','trialDone();');
@@ -581,6 +583,15 @@ function guess(index){
     guessedSpaces.push(index);
     $(".practiceLearnCell").css("pointer-events", "none");
     practiceGuess = true;
+    if(tutorialPause1){
+        if(guessCheck){
+            $('#instruct0txt').html("Nice! You hit the bullseye. Click Next to continue to the scoreboard.");
+        }
+        else if($('#clickInstruct0').attr('data-timesClicked') == "4"){
+            $('#instruct0txt').html("Oops, you missed the bullseye. Your partner will give you another hint and keep trying again until you hit the bullseye.");
+            $('#clickInstruct0').attr('data-timesClicked', "5");
+        }
+    }
 }
 
 function teacherHint(){
@@ -617,6 +628,7 @@ function teacherHint(){
                     $('#practiceLearnCell_'+index).css('opacity','1');
                     $('#practiceLearnCell_'+index).off('mouseenter');
                     $('#practiceLearnCell_'+index).off('mouseleave');
+                    $('#practiceLearnCell_'+index).prop("onclick", null).off("click");
                 }
             }
 
@@ -653,6 +665,7 @@ function practiceLearner(){
     battleship = sample(learnOrigSpaces);
     if(practiceTrialNumber > 0){
         document.getElementById('practiceLearn').remove();
+        $('.popup').hide();
     }
     guessCheck = false;
     turn = 0;
@@ -665,6 +678,7 @@ function practiceLearner(){
 
     create_table(rows, cols, 'practiceLearn', 'trialDiv_learner');
     $('.practiceLearnCell').css({'background-color':'gray'});
+
     for(var i=0; i<learnOrigSpaces.length; i++){
         ind = toIndex(learnOrigSpaces[i]);
         $('#practiceLearnCell_'+ind).css({'background-color':'white', 'opacity':'0'});
@@ -678,17 +692,84 @@ function practiceLearner(){
     }
 
     $(".practiceLearnCell").css("pointer-events", "none");
+
+    // Instructions for first time around
+    if(practiceTrialNumber == 0){
+        var popup = document.getElementById("popupInstruct0");
+        popup.classList.toggle("show");
+        $('#practiceInstruct').css('opacity','0');
+
+        $('#clickInstruct0').on('click', function(){
+            if($('#clickInstruct0').attr('data-timesClicked') == "0"){
+                $('#instruct0txt').html('This is what the field looks like.');
+                var pointer = document.getElementById("leftPointBoard");
+                pointer.classList.toggle("show");
+                var animate = setInterval(bouncingArrow, 5);
+                var pos = 1000;
+                var dir = "left";
+                function bouncingArrow(){
+                    if($('#clickInstruct0').attr('data-timesClicked') == "2"){
+                        clearInterval(animate);
+                    } else{
+                        if(pos <= 900 & dir=="left"){
+                            dir = "right";
+                        } else if(pos >= 1000 & dir=="right"){
+                            dir = "left";
+                        } else{
+                            if(dir=="left"){
+                                pos = pos-.75;
+                                pointer.style.left = pos + 'px';
+                            } else{
+                                pos = pos+.75;
+                                pointer.style.left = pos + 'px';
+                            }
+                        }
+                    }
+                }
+                $('#clickInstruct0').attr('data-timesClicked', "1");
+            }
+            else if($('#clickInstruct0').attr('data-timesClicked') == "1"){
+                $('#instruct0txt').html('Your partner will give you a hint about where <strong>NOT</strong> to shoot.');
+                var pointer = document.getElementById("leftPointBoard");
+                pointer.classList.toggle("hide");
+                $('#clickInstruct0').attr('data-timesClicked', "2");
+            }
+            else if($('#clickInstruct0').attr('data-timesClicked') == "2"){
+                isPaused = false;
+                $('#instruct0txt').html("The bullseye must be in one of the remaining non-shaded spaces.");
+                $('#clickInstruct0').attr('data-timesClicked', "3");
+            }
+            else if($('#clickInstruct0').attr('data-timesClicked') == "3"){
+                $('#instruct0txt').html("<b>Now you can prepare to guess the location of the bullseye.</b> Scroll over to see what's available, and click the space to shoot the arrow at that location.");
+                $(".practiceLearnCell").css("pointer-events", "auto");
+                tutorialPause0 = false;
+                $('#clickInstruct0').attr('data-timesClicked', "4");
+                $('#clickInstruct0').hide();
+            }
+            else{
+                var popup = document.getElementById("popupInstruct0");
+                popup.classList.toggle("hide");
+                
+            }
+        })
+    }
+    else{
+        $('#practiceInstruct').css('opacity','1');
+    }
+
     var practiceTurns = setInterval(function(){
         if(guessCheck){
             clearInterval(practiceTurns);
             $(".practiceLearnCell").css("pointer-events", "none");
             document.getElementById('nextPractice').disabled = false;
         }
-        if(practiceGuess && !guessCheck){
+        if(!isPaused && practiceGuess && !guessCheck){
             teacherHint();
-            $(".practiceLearnCell").css("pointer-events", "auto");
             turn++;
             practiceGuess = false;
+            if(!tutorialPause0){
+                $(".practiceLearnCell").css("pointer-events", "auto");
+            }
         }
     }, 1000)
 

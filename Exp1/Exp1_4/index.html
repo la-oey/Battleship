@@ -1,12 +1,3 @@
-<!--
-TODO:
-1. get images of products
-2. make product list correct
-3. randomize product list
-4. make the actual content of the experiment not filler.
-5. make it less ugly.
- -->
-
 <!DOCTYPE html>
 <html>
 <html lang="en-US">
@@ -59,49 +50,49 @@ $(document).ready(function(){
 	<button class= "big-button" onclick="clickConsent();"> Click here to consent and agree to participate</button>
 </div>
 
-<!-- <div id="selectDiff" class="screen">
-  <h2>
-    Select dimensions of table:<br>
-        <div>
-            <input type="radio" name="boardDim" value="2"/>2x2: Unbelievably Easy<br/>
-            <input type="radio" name="boardDim" value="4" checked />4x4: Doable<br/>
-            <input type="radio" name="boardDim" value="8"/>8x8: Suddenly Very Hard<br/>
-            <input type="radio" name="boardDim" value="16"/>16x16: Nearly Impossible for Normal Humans<br/>
-        </div><br><br>
- </h2>
-  <button class="big-button" onclick="clickDiff();">Next</button>
-</div> -->
-
-<div id="instructions" class="screen">
+<div id="instructions" class="screen instructions">
  <p class="mtitle">Welcome to the study.</p>
         <br><br>
-        <p>You and your friend are training for the Olympic Doubles Archery event. The event consists of two players. One player, <b>the learner</b>, shoots the arrow...but doesn't know where the bullseye is located. Despite this, there are some locations that are visible to her and she knows the bullseye might be located there, and there are others that are occluded and she knows the bullseye is absolutely NOT located there. She needs to learn the exact location of the bullseye from her partner. The other player, <b>the teacher</b>, knows where the bullseye is...but does not know what his teammate knows about each of the locations. He needs to guide his partner to shoot at the right location.
-        <br><br>
-        Importantly, the locations that are visible or occluded to the learner remain the same across the match, so the teacher can learn about what the learner knows based on the learner's actions.
-        <br><br>
-        Your team is scored based on how quickly you manage to hit the bullseye. You will be asked to play either the role of the learner or the teacher. 
-        <br><br>
-        Next, you will see practice trials in which you will take on the role of the learner, followed by the teacher.</p>
-  <button class="big-button" onclick="clickInstructions();">Click here to begin</button>
+        <p class="instruct">From the creators of Doubles Luge, we are excited to announce the Olympic's newest hot sport...</p>
+          <br>
+        <center><b class="instruct">The Olympic Doubles Archery Event!</b></center>
+          <br>
+        <p class="instruct">You and your friend have decided that competing in this new event is the most promising way to achieve your lifelong dream of winning an Olympic Gold Medal.</p>
+
+  <button class="big-button" id="instruct0" onclick="clickInstructions();">Click here to begin your training</button>
 </div>
 
-<div id="practiceInstruct" class="screen">
+<!-- <div id="practiceInstruct" class="screen">
   <p><br><br>Practice as the <b id="practiceRole">learner</b>.
       <br><br>
       <p2 id="roleInstruct">Your partner will show you which half of the board does NOT contain the bullseye, indicated by the colored shading. You will then click on the space where you think the bullseye is located from the remaining available spaces. Use the mouse to click on the spaces. You can only click on the white spaces. You and your partner will keep on providing hints and shooting the arrow until you hit the bullseye, at which point you can move to the next section. Try to hit the bullseye in as few turns as possible.</p2>
   </p>
   <button class="big-button" id="nextPracticeRole" type="button" onclick="clickPracticeRole();">Next!</button>
-</div>
+</div> -->
 
 <div id="practice" class="screen">
   <center><h1 id="practiceTrialTxt"></h1>
     <div id="practiceInstruct">Click on the space where you think the bullseye will be.<br>You can only click on the white spaces.<br></div><br>
+    <div class="popup">
+      <span class="popuptextleft" id="popupInstruct0">
+        <p id="instruct0txt">Welcome to the Olympic training grounds.</p>
+        <button class="little-button" id="clickInstruct0" type="button" data-timesClicked="0">Got it!</button>
+      </span>
+    </div>
     <div id="trialDiv_learner"></div><br><br></center>
+    <div class="pointer">
+      <span class="leftPoint" id="leftPointBoard"></span>
+    </div>
   <button class="big-button" id="nextPractice" type="button" onclick="tallyScore();">Next!</button>
 </div>
 
 <div id="scoreboard" class="screen">
-  <center><p class="mtitle" id="leader"></p></center>
+  <center><p class="mtitle" id="leader"></p>
+  <div class="popup" id="popupScoreboard">
+      <span class="popuptextleft" id="popupInstruct1">
+        <p id="instruct1txt">Here are the scores. The <b>fewer turns</b> it takes to hit the bullseye, the <b>less time</b> you'll have to wait. When the button turns white, click to continue. You'll practice 2 more times.</p>
+      </span>
+    </div></center>
   <div class="scoreboard">
     <div class="scoreCol">Your Team's Score:<br><b id="playerScore">0</b></div>
     <div class="scoreCol">Other Team's Score:<br><b id="opponentScore">0</b></div>
