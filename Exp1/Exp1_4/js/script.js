@@ -7,7 +7,7 @@ var Trial = 8; //switch to 8
 var PracticeTrial = 3;
 var rows = 4; 
 var cols = 4;
-var penalty = 3; // x * penalty second delay for turns & cells painted incorrectly
+var penalty = 1; // x * penalty second delay for turns & cells painted incorrectly
 var teachOrigSpaces = [];
 var learnOrigSpaces = [];
 var teachAvailable = [];
@@ -347,7 +347,7 @@ function paint(index, marked){
         } else if(marked == 1){
             $('#instruct3txt').html('Clicking again paints the space with a question mark! This helps you to mark your uncertainty. Click the space again!');
         } else{
-            $('#instruct3txt').html("Clicking one more time 'unpaints' the space! Paint the 8 spaces that you think your partner can see.");
+            $('#instruct3txt').html("Clicking one more time 'unpaints' the space by making it gray again! Paint the 8 spaces that you think your partner can see.");
             isPaused = false;
             for(var i=0; i<rows*cols; i++){
                 document.getElementById('gameboardCell_'+i).style.pointerEvents = 'auto';
@@ -599,7 +599,7 @@ function trialPaint(){
         for(var i=0; i<rows*cols; i++){
             document.getElementById('gameboardCell_'+i).style.pointerEvents = 'none';
         }
-        $('#instruct2txt').html("Nice job hitting the bullseye! Now you have time to jot notes here about which spaces you think your partner can see.");
+        $('#instruct2txt').html("Nice job hitting the bullseye! Here you'll show what you learned about which spaces you think your partner can see.");
         var popup = document.getElementById("popupInstruct3");
         popup.classList.toggle("show");
         $('#trialInstruct').css('opacity','0');
