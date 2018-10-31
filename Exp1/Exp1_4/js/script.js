@@ -3,11 +3,11 @@ var role = 'learner';
 var trialNumber = 0;
 var practiceTrialNumber = 0;
 var trialData = [];
-var Trial = 2; //switch to 8
+var Trial = 8; //switch to 8
 var PracticeTrial = 3;
 var rows = 4; 
 var cols = 4;
-var penalty = 0; // x * penalty second delay for turns & cells painted incorrectly
+var penalty = 3; // x * penalty second delay for turns & cells painted incorrectly
 var teachOrigSpaces = [];
 var learnOrigSpaces = [];
 var teachAvailable = [];
@@ -27,6 +27,7 @@ var turnColors = [{color:'red', r:'255', g:'0', b:'0'},
                   {color:'green', r:'0', g:'255', b:'0'},
                   {color:'blue', r:'0', g:'0', b:'255'},
                   {color:'purple', r:'255', g:'0', b:'255'}]
+var hintHtmlArr = [];
 var turn = 0;
 var maxpoints = rows + 1; //technically max points + 1
 var plaPoints = 0;
@@ -34,6 +35,7 @@ var oppPoints = 0;
 var plaTotalPoints = 0;
 var oppTotalPoints = 0;
 var highlighted = 0;
+var guessedInd = 0;
 var inited = false;
 var isPaused = true;
 var tutorialPause0 = true;
@@ -72,16 +74,17 @@ function clickInstructions(){
     document.getElementById('instructions').style.display = 'none';
     teachOrigSpaces = buildTeacherTable(rows, cols);
     learnOrigSpaces = buildLearnerTable(teachOrigSpaces);
-    practiceLearner();
+    document.getElementById('practiceRoleInstruct').style.display = 'block';
 }
 
-
-
-
-
-
-
-
+function clickPracticeRole(){
+    document.getElementById('practiceRoleInstruct').style.display = 'none';
+    if(role == "learner"){
+        practiceLearner();
+    } else{
+        trialStart();
+    }
+}
 
 function clickPostpractice(){
     document.getElementById('postpractice').style.display = 'none';
@@ -188,7 +191,7 @@ function highlight(check){
                                         'opacity':'0.3'});
         }
     }
-    document.getElementById('gameboard').setAttribute('onclick','clickBoard('+check+');');
+    //document.getElementById('gameboard').setAttribute('onclick','clickBoard('+check+');');
 }
 
 function clickBoard(selected){
@@ -246,12 +249,27 @@ function clickBoard(selected){
     //Computer's Guess
     //samples uniformly from set of hypothesis spaces not yet eliminated and not yet guessed
     var learnerGuess = sample(guessAvailable);
-    var guessedInd = toIndex(learnerGuess);
+
+    //prevents computer from winning on first turn of tutorial unless there's only one available space to guess
+    if(practiceTrialNumber == 0 && guessAvailable.length > 1){
+        while(toIndex(learnerGuess) == toIndex(battleship)){
+            learnerGuess = sample(guessAvailable);
+        }
+    }
+    
+    guessedInd = toIndex(learnerGuess);
     if(guessedInd == toIndex(battleship)){
         $('#target').remove();
         $('#gameboardCell_'+guessedInd).prepend('<img id="targetHit" src="img/targetHit.png" />');
     } else{
         $('#gameboardCell_'+guessedInd).prepend('<img id="arrow" src="img/arrow.png" />');
+    }
+    //in tutorial, pauses first computer's guess from being seen
+    if(practiceTrialNumber == 0 && turn==0){
+        $('#instruct2txt').html("You submitted your hint. Before you see what your partner guessed in response, you should notice...");
+        $('#clickInstruct2').show()
+        $('#gameboardCell_'+guessedInd).css('opacity','0');
+        document.onkeydown = null;
     }
     guessedSpaces.push(guessedInd);
     guessAvailable.splice(guessAvailable.indexOf(learnerGuess),1);
@@ -262,11 +280,20 @@ function clickBoard(selected){
     var numElimRound = numRemaining - learnAvailable.length;
     numElimRounds.push(numElimRound);
     numRemaining = learnAvailable.length;
-    $('#feedbackTurn').append("<font color='" + turnColors[turn].color + "'>Turn " + (turn+1) + ": " + numElimRound + "</font><br><br>")
+    var hintHtml = "";
+    hintHtmlArr.push("<font color='" + turnColors[turn].color + "'>Hint " + (turn+1) + ": " + numElimRound + "</font><br><br>");
+    for(var i=0; i<5; i++){
+        if(i < hintHtmlArr.length){
+            hintHtml = hintHtml + hintHtmlArr[i];
+        } else{
+            hintHtml = hintHtml + "\n";
+        }
+    }
+    //$('#feedbackTurn').append("<font color='" + turnColors[turn].color + "'>Hint " + (turn+1) + ": " + numElimRound + "</font><br><br>")
+    $('#feedbackTurn').html(hintHtml);
     ++turn;
 
     if(learnAvailable.length==1 || guessedInd==toIndex(battleship)){
-        document.getElementById('gameboard').setAttribute('onclick','');
         document.onkeydown = null;
         document.getElementById('next').disabled = false;
     }
@@ -298,9 +325,34 @@ function paint(index, marked){
     }
 
     if(numCellsPainted == learnOrigSpaces.length){
+        if(practiceTrialNumber == 0){
+            $('#instruct3txt').html("Nice job! You painted exactly 8 spaces. When you want to submit, click Next to continue.");
+        }
         document.getElementById('next').disabled=false;
     } else{
+        if(practiceTrialNumber == 0){
+            $('#instruct3txt').html("Paint exactly 8 spaces that you think your partner can see.");
+        }
         document.getElementById('next').disabled=true;
+    }
+
+    if(practiceTrialNumber == 0 && isPaused){
+        if(marked == 0){
+            $('#instruct3txt').html('You painted a space! Notice how the number of spaces painted is now "1 / 8". Click the space again!');
+            for(var i=0; i<rows*cols; i++){
+                if(index != i){
+                    document.getElementById('gameboardCell_'+i).style.pointerEvents = 'none';
+                }
+            }
+        } else if(marked == 1){
+            $('#instruct3txt').html('Clicking again paints the space with a question mark! This helps you to mark your uncertainty. Click the space again!');
+        } else{
+            $('#instruct3txt').html("Clicking one more time 'unpaints' the space! Paint the 8 spaces that you think your partner can see.");
+            isPaused = false;
+            for(var i=0; i<rows*cols; i++){
+                document.getElementById('gameboardCell_'+i).style.pointerEvents = 'auto';
+            }
+        }
     }
 }
 
@@ -324,6 +376,8 @@ function trialStart(){
     //}
 
     turn = 0;
+    hintHtmlArr = ['Spaces Elim.:<br><br>'];
+    $('#feedbackTurn').html(hintHtmlArr[0]);
     guessedSpaces = [];
     eliminatedChoice = [];
     numElimRounds = [];
@@ -339,12 +393,10 @@ function trialStart(){
     } else{
         document.getElementById('trialTxt').innerHTML = 'Practice: Teacher<br>Trial ' + (practiceTrialNumber+1);
     }
-    document.getElementById('feedbackTurn').innerHTML = 'Cells Eliminated by Turn:<br><br>';
     document.getElementById('feedback').innerHTML = "<br>Spaces Open: <p2 id='spacesOpen'></p2><br>Spaces Eliminated: <p2 id='spacesElim'></p2><br><br>"
     document.getElementById('spacesOpen').innerHTML = learnOrigSpaces.length;
     document.getElementById('spacesElim').innerHTML = 0;
-    document.getElementById('gameboard').setAttribute('onclick','');
-    document.getElementById('trialInstruct').innerHTML = 'Use "z" to switch between choices of what spaces to eliminate.<br>Use the return key or click anywhere on the board to submit your choice.'
+    document.getElementById('trialInstruct').innerHTML = "Use 'z' to switch between choices of what spaces to eliminate.<br>Use the 'return' key to submit your choice."
     $('#waitTrialTxt').hide();
 
     teachAvailable = teachOrigSpaces.slice(0);
@@ -357,24 +409,146 @@ function trialStart(){
 
     highlighted = 0;
     inited = false;
- 
-    document.onkeydown = function (e) {
+
+    var saved_keydown = function (e) {
         var keyCode = e.keyCode;
         if(keyCode==90){
+            if(isPaused){
+                if(tutorialPause0){
+                    $('#instruct2txt').html("Press 'z' again."); 
+                    tutorialPause0 = false;
+                } else{
+                    $('#instruct2txt').html("See how the shaded half changes. Now, press the 'return' key.");
+                    isPaused = false;
+                    inited = true;
+                }
+            } else{
+                inited = true;
+            }
             highlight(highlighted);
             if(highlighted==0){
                 highlighted=1;
             } else{
                 highlighted=0;
             }
-            inited = true;
         }
 
-        if(keyCode==13 && inited){
+        if(keyCode==13 && inited && !isPaused){
             clickBoard(Math.abs(highlighted-1));
         }
     };
 
+    if(practiceTrialNumber == 0 && turn == 0){
+        document.onkeydown = null;
+    } else{
+        document.onkeydown = saved_keydown;
+    }
+
+    // Instructions for first time around
+    if(practiceTrialNumber == 0){
+        isPaused = true;
+        $('.popup').show();
+        var popup = document.getElementById("popupInstruct2");
+        popup.classList.toggle("show");
+        $('#trialInstruct').css('opacity','0');
+
+        $('#clickInstruct2').on('click', function(){
+            if($('#clickInstruct2').attr('data-timesClicked') == "0"){
+                document.onkeydown = saved_keydown;
+                $('#instruct2txt').html("Press the 'z' key.");
+                $('#clickInstruct2').attr('data-timesClicked', "1");
+                $('#clickInstruct2').hide();
+                tutorialPause0 = true;
+            }
+            else if($('#clickInstruct2').attr('data-timesClicked') == "1"){
+                $('#instruct2txt').html('This column indicates the number of spaces you eliminated with your hint!');
+                var pointer = document.getElementById("downPointElim");
+                pointer.classList.toggle("show");
+
+                var animate = setInterval(bouncingArrow, 5);
+                var pos = 110;
+                var dir = "down";
+                function bouncingArrow(){
+                    if($('#clickInstruct2').attr('data-timesClicked') == "3"){
+                        pointer.classList.toggle("hide");
+                        clearInterval(animate);
+                    } else{
+                        if(pos >= 150 && dir=="down"){
+                            dir = "up";
+                        } else if(pos <= 110 && dir=="up"){
+                            dir = "down";
+                        } else{
+                            if(dir=="down"){
+                                pos = pos+.5;
+                                pointer.style.bottom = pos + 'px';
+                            } else{
+                                pos = pos-.5;
+                                pointer.style.bottom = pos + 'px';
+                            }
+                        }
+                    }
+                }
+                $('#clickInstruct2').attr('data-timesClicked', "2");
+                $('#clickInstruct2').show();
+            }
+            else if($('#clickInstruct2').attr('data-timesClicked') == "2"){
+                //isPaused = false;
+                $('#instruct2txt').html("This indicates the number of spaces that are still open to be guessed and the number of spaces still open.");
+                
+                var pointer = document.getElementById("rightPointSpaces");
+                pointer.classList.toggle("show");
+
+                var animate = setInterval(bouncingArrow, 5);
+                var pos = -700;
+                var dir = "right";
+                function bouncingArrow(){
+                    if($('#clickInstruct2').attr('data-timesClicked') == "4"){
+                        pointer.classList.toggle("hide");
+                        clearInterval(animate);
+                    } else{
+                        if(pos >= -650 && dir=="right"){
+                            dir = "left";
+                        } else if(pos <= -700 && dir=="left"){
+                            dir = "right";
+                        } else{
+                            if(dir=="right"){
+                                pos = pos+.5;
+                                pointer.style.left = pos + 'px';
+                            } else{
+                                pos = pos-.5;
+                                pointer.style.left = pos + 'px';
+                            }
+                        }
+                    }
+                }
+                $('#clickInstruct2').attr('data-timesClicked', "3");
+            }
+            else if($('#clickInstruct2').attr('data-timesClicked') == "3"){
+                $('#instruct2txt').html("Now let's show where your partner guessed.");
+                $('#clickInstruct2').attr('data-timesClicked', "4");
+            }
+            else if($('#clickInstruct2').attr('data-timesClicked') == "4"){
+                if(guessedInd == toIndex(battleship)){
+                    $('#instruct2txt').html("Your partner hit the bullseye! Click Next to continue.");
+                } else{
+                    $('#instruct2txt').html("Your partner didn't hit the bullseye. Try again until your partner hits the bullseye.");
+                }
+                $('#gameboardCell_'+guessedInd).css('opacity','1');
+                $('#clickInstruct2').attr('data-timesClicked', "5");
+            }
+            else{
+                var popup = document.getElementById("popupInstruct2");
+                isPaused = false;
+                $('#trialInstruct').css('opacity','1');
+                document.onkeydown = saved_keydown;
+                popup.classList.toggle("hide");
+            }
+        })
+    }
+    else{
+        $('#trialInstruct').css('opacity','1');
+    }
+ 
     startTime = Date.now();
 }
 
@@ -421,11 +595,65 @@ function trialPaint(){
     document.getElementById('feedback').innerHTML = "<br>Spaces Painted: <p2 id='spacesPainted'></p2> / " + learnOrigSpaces.length + "<br><br><br>";
     document.getElementById('spacesPainted').innerHTML = numCellsPainted;
 
+    if(practiceTrialNumber == 0){
+        for(var i=0; i<rows*cols; i++){
+            document.getElementById('gameboardCell_'+i).style.pointerEvents = 'none';
+        }
+        $('#instruct2txt').html("Nice job hitting the bullseye! Now you have time to jot notes here about which spaces you think your partner can see.");
+        var popup = document.getElementById("popupInstruct3");
+        popup.classList.toggle("show");
+        $('#trialInstruct').css('opacity','0');
+
+        $('#clickInstruct3').on('click', function(){
+            if($('#clickInstruct3').attr('data-timesClicked') == "0"){
+                $('#instruct3txt').html('Notice that the large grid is now gray and a smaller grid has appeared in the lower right showing the hints and guesses from before.');
+                $('#clickInstruct3').attr('data-timesClicked', "1");
+            }
+            else if($('#clickInstruct3').attr('data-timesClicked') == "1"){
+                $('#instruct3txt').html('Your job is to paint the grid white where you think your partner can see.');
+                $('#clickInstruct3').attr('data-timesClicked', "2");
+            }
+            else if($('#clickInstruct3').attr('data-timesClicked') == "2"){
+                $('#instruct3txt').html('Remember when you were the learner and you could only click on half the spaces? Right! Your job is to paint those in now.');
+                $('#clickInstruct3').attr('data-timesClicked', "3");
+            }
+            else if($('#clickInstruct3').attr('data-timesClicked') == "3"){
+                $('#instruct3txt').html('For future trials, keep in mind that the location of the open spaces stays consistent across trials.');
+                $('#clickInstruct3').attr('data-timesClicked', "4");
+            }
+            else if($('#clickInstruct3').attr('data-timesClicked') == "4"){
+                $('#instruct3txt').html('You can use the smaller grid to help you remember what hints you just gave and where your partner guessed.');
+                $('#clickInstruct3').attr('data-timesClicked', "5");
+            }
+            else if($('#clickInstruct3').attr('data-timesClicked') == "5"){
+                $('#instruct3txt').html('To paint a space white, simply click on the space.');
+                $('#clickInstruct3').attr('data-timesClicked', "6");
+            }
+            else{
+                for(var i=0; i<rows*cols; i++){
+                    document.getElementById('gameboardCell_'+i).style.pointerEvents = 'auto';
+                }
+                $('#instruct3txt').html('Click on one of the gray spaces!');
+                $('#clickInstruct3').attr('data-timesClicked', "7");
+                $('#clickInstruct3').hide();
+                isPaused = true;
+            }
+        })
+    }
+
     startTime = Date.now();
 }
 
 function trialFeedback(){
     paintRT = Date.now() - startTime; //records time to complete "painting" stage
+
+    if(practiceTrialNumber == 0){
+        var popup = document.getElementById("popupInstruct3");
+        popup.classList.toggle("hide");
+        $('.popupTeacher3').css('display','');
+        popup = document.getElementById("popupInstruct4");
+        popup.classList.toggle("show");
+    }
 
     cellsCorr = 0;
     document.getElementById('feedbackTurn').innerHTML = '';
@@ -442,7 +670,7 @@ function trialFeedback(){
     }
 
     $('#feedback').html("<div id='paintFeedback'>Feedback: <p2 id='spacesCorr'>" + cellsCorr + " / " + learnOrigSpaces.length + "</p2> Spaces Correct</div><br><br><br>");
-    $('#paintFeedback').css({'font-size':'36px'});
+    $('#paintFeedback').css({'font-size':'30px'});
     $('#spacesCorr').css({'padding-left':'20px', 'padding-right':'10px'});
 
     document.getElementById('next').setAttribute('onclick','tallyScore();');
@@ -465,6 +693,8 @@ function trialFeedback(){
     }, 1000)
 
     document.getElementById('trialInstruct').innerHTML = '<br><br><br>';
+
+    
 }
 
 function tallyScore(){
@@ -505,6 +735,12 @@ function tallyScore(){
 
     if(exptPart=="practice"){
         if(practiceTrialNumber == 0){
+            if(role == "teacher"){
+                $('#instruct1txt').html("As in before, the <b>fewer turns</b> it takes your partner to hit the bullseye, the <b>less time</b> you'll have to wait. You'll practice being the teacher 2 more times.")
+            } else{
+                var popup2 = document.getElementById("popupInstruct4");
+                popup2.classList.toggle("hide");
+            }
             var popup = document.getElementById("popupInstruct1");
             popup.classList.toggle("show");
         }
@@ -613,7 +849,7 @@ function teacherHint(){
     }
     halfSpacesByTurn.push(halfSpacesAsByte);
     halfSpacesNumElimByTurn.push(halfSpacesNumElim);
-    var selected = sampleInt(0,1);
+    var selected = sampleInt(0,2);
     eliminatedChoice.push(selected);
     var move = halfSpaces[selected];
 
@@ -705,15 +941,15 @@ function practiceLearner(){
                 var pointer = document.getElementById("leftPointBoard");
                 pointer.classList.toggle("show");
                 var animate = setInterval(bouncingArrow, 5);
-                var pos = 1000;
+                var pos = 1100;
                 var dir = "left";
                 function bouncingArrow(){
                     if($('#clickInstruct0').attr('data-timesClicked') == "2"){
                         clearInterval(animate);
                     } else{
-                        if(pos <= 900 & dir=="left"){
+                        if(pos <= 1000 && dir=="left"){
                             dir = "right";
-                        } else if(pos >= 1000 & dir=="right"){
+                        } else if(pos >= 1100 && dir=="right"){
                             dir = "left";
                         } else{
                             if(dir=="left"){
@@ -790,18 +1026,7 @@ function practiceDone(){
             practiceTrialNumber = 0;
             role = 'teacher';
             $('#practiceRole').html(role);
-            $('#roleInstruct').html('Now your job is to provide hints to your partner. ' + 
-                'You will select which half of the board to provide a hint about. ' +
-                'You can look at your options by pressing "z" and then plug in your hint by pressing "enter". ' +
-                'The board will be colored in, corresponding to your hint, and you will also see how many spaces you eliminated for your partner. ' +
-                'Your partner will then shoot the arrow at a space. ' +
-                'You and your partner will repeat until your partner hits the bullseye. ' +
-                '<b>Keep in mind that your partner knows that some of the spaces do not contain the bullseye.</b> ' +
-                'After successfully hitting the bullseye, you will be asked to paint in the 8 spaces you think your partner sees as potential bullseye locations. ' +
-                'You may click a space a second time to mark it with "?" if you are unsure. ' +
-                'You will then be provided with feedback about how many spaces you correctly guessed your partner can see. ' +
-                'Try to have your partner hit the bullseye in as few turns as possible.')
-            document.getElementById('practiceInstruct').style.display = 'block';
+            document.getElementById('practiceRoleInstruct').style.display = 'block';
         } else{
             practiceLearner();
         }

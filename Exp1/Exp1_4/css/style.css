@@ -128,7 +128,25 @@ p {
 
 #popupScoreboard {
   position: relative;
-  top: 180px;
+  bottom: 180px;
+  right: 40%;
+}
+
+#popupTeacher {
+  position: relative;
+  top: 120px;
+  right: 40%;
+}
+
+#popupTeacher2 {
+  display: none;
+  position: relative;
+  right: 40%;
+}
+#popupTeacher3 {
+  display: none;
+  position: relative;
+  top: 185px;
   right: 40%;
 }
 
@@ -184,6 +202,94 @@ p {
 }
 
 .pointer .hide {
+    visibility: hidden;
+}
+
+.pointer2 {
+    width: 80px;
+    height: 80px;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.pointer2 .downPoint {
+    visibility: hidden;
+    width: 20px;
+    height: 40px;
+    background-color: red;
+    text-align: center;
+    padding: 8px 0;
+    position: absolute;
+    left: -200%;
+    bottom: 50%;
+    z-index: 1;
+    margin-left: -80px;
+}
+
+/* Popup arrow */
+.pointer2 .downPoint::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: -100%;
+    margin-left: 0px;
+    border-width: 30px;
+    border-style: solid;
+    border-color: red transparent transparent transparent;
+}
+
+.pointer2 .show {
+    visibility: visible;
+    -webkit-animation: fadeIn 0.8s;
+    animation: fadeIn 0.8s;
+}
+
+.pointer2 .hide {
+    visibility: hidden;
+}
+
+.pointer3 {
+    width: 80px;
+    height: 80px;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.pointer3 .rightPoint {
+    visibility: hidden;
+    width: 40px;
+    height: 20px;
+    background-color: red;
+    text-align: center;
+    padding: 8px 0;
+    position: absolute;
+    left: 50%;
+    top: 220%;
+    z-index: 1;
+    margin-left: -80px;
+}
+
+/* Popup arrow */
+.pointer3 .rightPoint::after {
+    content: "";
+    position: absolute;
+    top: -33%;
+    left: 100%;
+    margin-left: 0px;
+    border-width: 30px;
+    border-style: solid;
+    border-color: transparent transparent transparent red;
+}
+
+.pointer3 .show {
+    visibility: visible;
+    -webkit-animation: fadeIn 0.8s;
+    animation: fadeIn 0.8s;
+}
+
+.pointer3 .hide {
     visibility: hidden;
 }
 
@@ -327,7 +433,9 @@ img {
 }
 
 #feedbackTurn {
+  position: relative;
   width: 15%;
+  top: -80px;
   text-align: left;
   font-size: 20px;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;

@@ -62,13 +62,10 @@ $(document).ready(function(){
   <button class="big-button" id="instruct0" onclick="clickInstructions();">Click here to begin your training</button>
 </div>
 
-<!-- <div id="practiceInstruct" class="screen">
-  <p><br><br>Practice as the <b id="practiceRole">learner</b>.
-      <br><br>
-      <p2 id="roleInstruct">Your partner will show you which half of the board does NOT contain the bullseye, indicated by the colored shading. You will then click on the space where you think the bullseye is located from the remaining available spaces. Use the mouse to click on the spaces. You can only click on the white spaces. You and your partner will keep on providing hints and shooting the arrow until you hit the bullseye, at which point you can move to the next section. Try to hit the bullseye in as few turns as possible.</p2>
-  </p>
+<div id="practiceRoleInstruct" class="screen">
+  <center><p>Practice as the <b id="practiceRole">learner</b>.</p></center>
   <button class="big-button" id="nextPracticeRole" type="button" onclick="clickPracticeRole();">Next!</button>
-</div> -->
+</div>
 
 <div id="practice" class="screen">
   <center><h1 id="practiceTrialTxt"></h1>
@@ -90,7 +87,7 @@ $(document).ready(function(){
   <center><p class="mtitle" id="leader"></p>
   <div class="popup" id="popupScoreboard">
       <span class="popuptextleft" id="popupInstruct1">
-        <p id="instruct1txt">Here are the scores. The <b>fewer turns</b> it takes to hit the bullseye, the <b>less time</b> you'll have to wait. When the button turns white, click to continue. You'll practice 2 more times.</p>
+        <p id="instruct1txt">Here are the scores. The <b>fewer turns</b> it takes to hit the bullseye, the <b>less time</b> you'll have to wait. You'll practice 2 more times.</p>
       </span>
     </div></center>
   <div class="scoreboard">
@@ -108,9 +105,9 @@ $(document).ready(function(){
     <p>
       You are ready to begin competing as an Olympian!
       <br><br>
-      You will now be randomly assigned to the role of learner or teacher. If you are the learner, you will need to find out where the bullseye is with the help of hints from your partner. If you are the teacher, you will need to provide hints that will help your partner find where the bullseye is and then you will be asked to paint in the spaces that your partner sees.
+      You will now be randomly assigned to the role of learner or teacher.
       <br><br>
-      <b>The spaces that your partner knows do not contain the bullseye stays constant across trials, but the bullseye location changes between trials.</b> In addition to scoring being based off of how quickly your team hits the bullseye, you will also experience a delay between trials that will be longer if your team requires more turns to hit the bullseye. There will be 8 trials. Good luck!
+      There will be 8 new trials. Keep in mind that you and your partner will have a brand new grid. Good luck!
       <br>
     </p>
   <button class="big-button" onclick="clickPostpractice();">Click to continue</button>
@@ -126,9 +123,32 @@ $(document).ready(function(){
 <div id="trial" class="screen">
 	<center><h1 id="trialTxt"></h1>
     <div id="trialInstruct"></div><br>
+    <div class="popup" id="popupTeacher">
+      <span class="popuptextleft" id="popupInstruct2">
+        <p id="instruct2txt">Now you will try the teaching role.</p>
+        <button class="little-button" id="clickInstruct2" type="button" data-timesClicked="0">Got it!</button>
+      </span>
+    </div>
+    <div class="popup" id="popupTeacher2">
+      <span class="popuptextleft" id="popupInstruct3">
+        <p id="instruct3txt">Nice job hitting the bullseye! Now you have time to jot notes here about where you think your partner can see.</p>
+        <button class="little-button" id="clickInstruct3" type="button" data-timesClicked="0">Got it!</button>
+      </span>
+    </div>
+    <div class="popup" id="popupTeacher3">
+      <span class="popuptextleft" id="popupInstruct4">
+        <p id="instruct4txt">This shows you how many spaces you painted correctly. The more spaces you paint correctly, the less time you'll need to wait.</p>
+      </span>
+    </div>
+    <div class="pointer2">
+      <span class="downPoint" id="downPointElim"></span>
+    </div>
     <div class="column" id="trialDiv"></div></center>
     <div class="column" id="feedbackTurn"></div>
     <div class="column" id="completeDiv"><table id="completeBoard"></table></div>
+  <div class="pointer3">
+      <span class="rightPoint" id="rightPointSpaces"></span>
+    </div>
   <div id="feedback" style="clear:both;"></div><br><br>
   <div class="wait" id="waitTrialTxt">You got <b id="waitCells"></b> cell(s) incorrect. Wait <b id="waitTrial"></b> seconds.</div><br><br>
 	<button class="big-button" id="next" type="button" onclick="trialPaint();"  >Next!</button>
