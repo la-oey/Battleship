@@ -445,7 +445,7 @@ function trialStart(){
     }
 
     // Instructions for first time around
-    if(practiceTrialNumber == 0){
+    if(practiceTrialNumber == 0 && turn == 0){
         isPaused = true;
         $('.popup').show();
         var popup = document.getElementById("popupInstruct2");
@@ -538,10 +538,12 @@ function trialStart(){
             }
             else{
                 var popup = document.getElementById("popupInstruct2");
+                popup.classList.toggle("hide");
+                $('#popupInstruct2').hide();
                 isPaused = false;
                 $('#trialInstruct').css('opacity','1');
                 document.onkeydown = saved_keydown;
-                popup.classList.toggle("hide");
+                $('#clickInstruct2').attr('data-timesClicked', "6");
             }
         })
     }
@@ -599,7 +601,6 @@ function trialPaint(){
         for(var i=0; i<rows*cols; i++){
             document.getElementById('gameboardCell_'+i).style.pointerEvents = 'none';
         }
-        $('#instruct2txt').html("Nice job hitting the bullseye! Here you'll show what you learned about which spaces you think your partner can see.");
         var popup = document.getElementById("popupInstruct3");
         popup.classList.toggle("show");
         $('#trialInstruct').css('opacity','0');
@@ -850,6 +851,9 @@ function teacherHint(){
     halfSpacesByTurn.push(halfSpacesAsByte);
     halfSpacesNumElimByTurn.push(halfSpacesNumElim);
     var selected = sampleInt(0,2);
+    if(halfSpacesByTurn.length == 1){
+        selected = 0;
+    }
     eliminatedChoice.push(selected);
     var move = halfSpaces[selected];
 
